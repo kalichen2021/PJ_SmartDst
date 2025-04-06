@@ -1,0 +1,58 @@
+<template>
+  <div class="icon-item">
+    <img src="/favicon.ico" :alt="props.name">
+    <span>{{ props.name }}</span>
+  </div>
+</template>
+
+<script setup lang="ts">
+
+const props = defineProps({
+  name: {
+    type: String,
+    required: true,
+  },
+});
+</script>
+
+<style scoped>
+.icon-item {
+  max-width: var(--icon-size);
+  max-height: var(--icon-size);
+  padding: .2rem;
+  margin: .2rem;
+  object-fit: cover;
+  transition: all 0.3s ease;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: .2rem;
+  /* border: 1px solid #000; */
+
+  overflow: hidden;
+}
+
+.icon-item:hover {
+  transform: scale(1.1);
+  background-color: #6565657b;
+  /* Scale up the image on hover */
+}
+
+img {
+  width: 70%;
+  height: auto;
+  object-fit: cover;
+  /* border-radius: 50%; */
+}
+
+span {
+  font-size: 0.8rem;
+  color: var(color-text);
+  text-align: center;
+  /* margin-top: 0rem; */
+  /* Add any additional styles for the text here */
+}
+</style>

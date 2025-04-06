@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import IconGroup from '@/components/IconGroup.vue'
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <IconGroup />
   </main>
 </template>

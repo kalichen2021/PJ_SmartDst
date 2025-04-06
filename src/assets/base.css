@@ -50,6 +50,11 @@
   }
 }
 
+/* value */
+:root {
+  --icon-size: 64px;
+}
+
 *,
 *::before,
 *::after {
