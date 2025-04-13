@@ -1,16 +1,31 @@
-const elIconMore = (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-    <path
-      fill="currentColor"
-      d="m19.44 12.99l-.01.02c.04-.33.08-.67.08-1.01s-.03-.66-.07-.99l.01.02l2.44-1.92l-2.43-4.22l-2.87 1.16l.01.01c-.52-.4-1.09-.74-1.71-1h.01L14.44 2H9.57l-.44 3.07h.01c-.62.26-1.19.6-1.71 1l.01-.01l-2.88-1.17l-2.44 4.22l2.44 1.92l.01-.02c-.04.33-.07.65-.07.99s.03.68.08 1.01l-.01-.02l-2.1 1.65l-.33.26l2.43 4.2l2.88-1.15l-.02-.04c.53.41 1.1.75 1.73 1.01h-.03L9.58 22h4.85s.03-.18.06-.42l.38-2.65h-.01c.62-.26 1.2-.6 1.73-1.01l-.02.04l2.88 1.15l2.43-4.2s-.14-.12-.33-.26zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5s3.5 1.57 3.5 3.5s-1.57 3.5-3.5 3.5"
-    />
-  </svg>
-)
+import { h, render, type Ref } from 'vue'
+import IconMore from '@/components/icons/IconMore.vue'
 
 export function hoverHandler() {}
 
-export function rightClickHandler() {
-  // console.log("right click")
+export function rightClickHandler(el: HTMLElement, isElConf: Ref<Boolean>) {
+  // elIconMore into el
+  const vnode = h(
+    'div',
+    {
+      class: 'GrpCtnConf',
+      style: {
+        position: 'absolute',
+        top: '0',
+        right: '-1.5rem',
+        width: '1.5rem',
+        height: '1.5rem',
+      },
+    },
+    [h(IconMore)],
+  ) // 创建虚拟节点
+  render(vnode, el) // 渲染到指定的 DOM 元素
+
+  const iconElement = document.querySelector('.GrpCtnConf')
+  iconElement?.addEventListener('mousedown', (e) => {
+    render(null, el) // Unmount the vnode
+    isElConf.value = true //可设置状态
+  })
 }
 
 export function resize(el: HTMLElement) {

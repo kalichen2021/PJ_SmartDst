@@ -1,11 +1,13 @@
 <template>
   <div class="icon-group">
     <div class="border-container" ref="elIconGrpCtn">
+      <span class="bar controller"><icon-bar /></span>
       <div class="container">
         <div v-for="icon in icons" :key="icon.id">
           <icon-app :name="icon.name" />
         </div>
       </div>
+      <span class="scaler controller"><icon-arrows-rotate /></span>
     </div>
     <span>文件夹</span>
   </div>
@@ -13,13 +15,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { hoverHandler, resize } from './utils/IconGroup.tsx';
+import { rightClickHandler, resize } from './utils/IconGroup.tsx';
 import IconApp from './icons/IconApp.vue';
+import IconBar from './icons/IconBar.vue';
+import IconArrowsRotate from './icons/IconArrowsRotate.vue';
+import { watchEffect } from 'vue';
 
 const icons = ref([
   { id: 1, name: 'home' },
   { id: 2, name: 'settings' },
-  { id: 3, name: 'user' },
   { id: 3, name: 'user' },
   { id: 4, name: 'search' },
   { id: 5, name: 'bell' },
@@ -33,9 +37,23 @@ const icons = ref([
 const elIconGrpCtn = ref<HTMLElement | null>(null)
 
 onMounted(() => {
-  elIconGrpCtn.value!.setAttribute("group-state", "static")
+  const isElIconGrpCtnConf = ref<Boolean>(false)
+  const GrpCtnCotroller = elIconGrpCtn.value!.querySelectorAll(".controller") as NodeListOf<HTMLElement>
+  watchEffect(() => {
+    console.log(isElIconGrpCtnConf.value)
+    // 显示操作控件
+    if (isElIconGrpCtnConf.value) {
+      console.log(GrpCtnCotroller);
+      [...GrpCtnCotroller].forEach((el) => el!.style.display = "block")
+    }
+  })
 
-  elIconGrpCtn.value!.addEventListener("mouseover", hoverHandler)
+  // 右键设置
+  elIconGrpCtn.value!.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    console.log("right click")
+    rightClickHandler(elIconGrpCtn.value!, isElIconGrpCtnConf);
+  });
 })
 </script>
 
@@ -59,6 +77,7 @@ onMounted(() => {
 }
 
 .border-container {
+  position: relative;
   border: 1px solid #ff0000;
   border-radius: 1rem;
   @include display-c;
@@ -66,6 +85,35 @@ onMounted(() => {
   height: calc(var(--icon-size)*1/3 + var(--grid-box-size-h));
 }
 
+.border-container .controller {
+  position: absolute;
+  display: none;
+}
+
+.border-container .controller svg {
+  width: 100%;
+  height: 100%;
+}
+
+.border-container .bar {
+  top: 0;
+  width: 5rem;
+  height: 1rem;
+}
+
+.border-container .scaler {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  bottom: -.05rem;
+  right: -.05rem;
+}
+
+.border-container .scaler svg {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
 
 .container {
   // border: red 1px solid;
