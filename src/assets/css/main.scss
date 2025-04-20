@@ -1,5 +1,4 @@
-@import './base.css';
-@import "./animate.scss";
+// @use 'utils' as *; 已经在vite.cinfig.ts中导入
 
 #app {
   max-width: 1280px;

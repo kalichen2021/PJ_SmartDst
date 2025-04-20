@@ -3,31 +3,46 @@ import IconMore from '@/components/icons/IconMore.vue'
 
 export function hoverHandler() {}
 
-export function rightClickHandler(el: HTMLElement, isElConf: Ref<Boolean>) {
+export function rightClickHandler(
+  el: HTMLElement,
+  isClicked: Ref<Boolean>,
+  isElConf: Ref<Boolean>,
+) {
   // elIconMore into el
-  const vnode = h(
-    'div',
-    {
-      class: 'GrpCtnConf',
-      style: {
-        position: 'absolute',
-        top: '0',
-        right: '-1.5rem',
-        width: '1.5rem',
-        height: '1.5rem',
-      },
-    },
-    [h(IconMore)],
-  ) // 创建虚拟节点
-  render(vnode, el) // 渲染到指定的 DOM 元素
-
-  const iconElement = document.querySelector('.GrpCtnConf')
-  iconElement?.addEventListener('mousedown', (e) => {
-    render(null, el) // Unmount the vnode
+  isClicked.value = true // 显示
+  const elBtnEdit = el.querySelector('.CtnConf')
+  elBtnEdit?.addEventListener('mousedown', (e) => {
     isElConf.value = true //可设置状态
+    isClicked.value = false //隐藏
   })
 }
 
 export function resize(el: HTMLElement) {
   // el.addEventListener("")
+}
+
+let startX: number, startY: number, initLeft: number, initTop: number
+let drugEl: HTMLElement | null = null
+let isDrugging = false
+
+const _mMoveHandler = (e: MouseEvent) => {
+  if (isDrugging) {
+    const moveX = e.clientX - startX
+    const moveY = e.clientY - startY
+    drugEl!.style.left = `${initLeft + moveX}px`
+    drugEl!.style.top = `${initTop + moveY}px`
+  }
+}
+
+export function dragHandler(e: MouseEvent, el: HTMLElement) {
+  e.preventDefault()
+  startX = e.clientX
+  startY = e.clientY
+  initLeft = el.getBoundingClientRect().left
+  initTop = el.getBoundingClientRect().top
+  drugEl = el
+  isDrugging = true
+
+  document.addEventListener('mousemove', (e) => _mMoveHandler(e))
+  document.addEventListener('mouseup', (e) => _mUpHandler(e))
 }

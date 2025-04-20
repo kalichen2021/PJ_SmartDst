@@ -1,25 +1,32 @@
 <template>
   <div class="icon-group">
     <div class="border-container" ref="elIconGrpCtn">
-      <span class="bar controller"><icon-bar /></span>
+      <span class="bar controller" ref="elGrabBar"><icon-bar /></span>
       <div class="container">
         <div v-for="icon in icons" :key="icon.id">
           <icon-app :name="icon.name" />
         </div>
       </div>
       <span class="scaler controller"><icon-arrows-rotate /></span>
+      <CtnMenu>
+        <Transition name="rotate-ani">
+          <IconMore v-if="isRightClicked" />
+        </Transition>
+      </CtnMenu>
     </div>
     <span>文件夹</span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { rightClickHandler, resize } from './utils/IconGroup.tsx';
+import { ref, onMounted, watchEffect } from 'vue';
+import { rightClickHandler, resize, dragHandler } from './utils/IconGroup.tsx';
 import IconApp from './icons/IconApp.vue';
 import IconBar from './icons/IconBar.vue';
+import IconMore from './icons/IconMore.vue';
 import IconArrowsRotate from './icons/IconArrowsRotate.vue';
-import { watchEffect } from 'vue';
+
+import CtnMenu from '@/components/widget/CtnMenu.vue'
 
 const icons = ref([
   { id: 1, name: 'home' },
@@ -35,10 +42,27 @@ const icons = ref([
 ]);
 
 const elIconGrpCtn = ref<HTMLElement | null>(null)
+const elGrabBar = ref<HTMLElement | null>(null)
+
+const isRightClicked = ref(false)
 
 onMounted(() => {
+  // 文件图标组是否为编辑状态
   const isElIconGrpCtnConf = ref<Boolean>(false)
-  const GrpCtnCotroller = elIconGrpCtn.value!.querySelectorAll(".controller") as NodeListOf<HTMLElement>
+  // 获取控制器元素
+  const GrpCtnCotroller =
+    elIconGrpCtn.value!.querySelectorAll(".controller") as NodeListOf<HTMLElement>
+
+  /**
+   * 编辑文件图标组步骤说明；
+   * 1. 文件图标组是否被右击 ---y--> 右键菜单
+   * 2. 右键菜单中编辑选项是否被点击 ---y--> 文件图标组设置为编辑状态
+   * 3. 监听文件图标组是否为编辑状态 ---y--> 显示操作控件
+   * 
+   * 编辑状态下，文件图标组的控制器可拖动、缩放
+   */
+
+  // 监听文件图标组是否为编辑状态
   watchEffect(() => {
     console.log(isElIconGrpCtnConf.value)
     // 显示操作控件
@@ -52,18 +76,19 @@ onMounted(() => {
   elIconGrpCtn.value!.addEventListener("contextmenu", (e) => {
     e.preventDefault();
     console.log("right click")
-    rightClickHandler(elIconGrpCtn.value!, isElIconGrpCtnConf);
+    rightClickHandler(elIconGrpCtn.value!, isRightClicked, isElIconGrpCtnConf);
   });
+
+  // 拖动事件
+  elGrabBar.value!.addEventListener("mousedown", e =>
+    dragHandler(e, elIconGrpCtn.value!)
+  )
 })
 </script>
 
 <style scoped lang="scss">
-@mixin display-c {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
+@include rotate-ani(-.5rem, 0);
+
 
 .icon-group {
   --grid-box-size-w: calc(var(--icon-size) * 3);
