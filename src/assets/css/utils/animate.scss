@@ -30,3 +30,23 @@
     transform: translate(0, 0) rotate(360deg);
   }
 }
+
+@mixin move-ani($tran-x: -0.5rem, $tran-y: 0.5rem) {
+  $ani-name: move-ani;
+  .#{$ani-name}-enter-active,
+  .#{$ani-name}-leave-active {
+    transition: all 0.5s ease-in-out;
+  }
+
+  .#{$ani-name}-enter-from,
+  .#{$ani-name}-leave-to {
+    opacity: 0;
+    transform: translate($tran-x, $tran-y);
+  }
+
+  .#{$ani-name}-enter-to,
+  .#{$ani-name}-leave-from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}

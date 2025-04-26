@@ -1,5 +1,5 @@
 <template>
-  <div class="icon-group">
+  <div class="icon-group" draggable="true" ref="elIconGrp">
     <div class="border-container" ref="elIconGrpCtn">
       <span class="bar controller" ref="elGrabBar"><icon-bar /></span>
       <div class="container">
@@ -8,12 +8,10 @@
         </div>
       </div>
       <span class="scaler controller"><icon-arrows-rotate /></span>
-      <CtnMenu>
-        <Transition name="rotate-ani">
-          <IconMore v-if="isRightClicked" />
-        </Transition>
-      </CtnMenu>
     </div>
+    <CtnMenu :is-invisible="isRightClicked">
+      <IconMore @click="elIconMoreClick" />
+    </CtnMenu>
     <span>文件夹</span>
   </div>
 </template>
@@ -41,17 +39,23 @@ const icons = ref([
   { id: 10, name: 'music' },
 ]);
 
+const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
 const elGrabBar = ref<HTMLElement | null>(null)
+const elCtnMenu = ref<HTMLElement | null>(null)
 
 const isRightClicked = ref(false)
+
+let elIconMoreClick: any
 
 onMounted(() => {
   // 文件图标组是否为编辑状态
   const isElIconGrpCtnConf = ref<Boolean>(false)
   // 获取控制器元素
   const GrpCtnCotroller =
-    elIconGrpCtn.value!.querySelectorAll(".controller") as NodeListOf<HTMLElement>
+    elIconGrpCtn.value!.querySelectorAll(".controller") as NodeListOf<HTMLElement>;
+
+  elCtnMenu.value = elIconGrp.value!.querySelector(".CtnConf")
 
   /**
    * 编辑文件图标组步骤说明；
@@ -63,36 +67,50 @@ onMounted(() => {
    */
 
   // 监听文件图标组是否为编辑状态
-  watchEffect(() => {
-    console.log(isElIconGrpCtnConf.value)
-    // 显示操作控件
-    if (isElIconGrpCtnConf.value) {
-      console.log(GrpCtnCotroller);
-      [...GrpCtnCotroller].forEach((el) => el!.style.display = "block")
-    }
-  })
+  // watchEffect(() => {
+  //   console.log(isElIconGrpCtnConf.value)
+  //   // 显示操作控件
+  //   if (isElIconGrpCtnConf.value) {
+  //     console.log(GrpCtnCotroller);
+  //     [...GrpCtnCotroller].forEach((el) => el!.style.display = "block")
+  //   }
+  // })
 
   // 右键设置
   elIconGrpCtn.value!.addEventListener("contextmenu", (e) => {
     e.preventDefault();
     console.log("right click")
-    rightClickHandler(elIconGrpCtn.value!, isRightClicked, isElIconGrpCtnConf);
+    console.log(elCtnMenu.value)
+    isRightClicked.value = true
+    // elCtnMenu.value!.style.display = "block"
+    // showCtnMenu()
+    // rightClickHandler(elIconGrpCtn.value!, isRightClicked, isElIconGrpCtnConf);
   });
 
+  // 点击进入设置
+  elIconMoreClick = () => {
+    isRightClicked.value = !isRightClicked.value;
+    [...GrpCtnCotroller].forEach((el) => el!.style.display = "block")
+  }
+
   // 拖动事件
-  elGrabBar.value!.addEventListener("mousedown", e =>
-    dragHandler(e, elIconGrpCtn.value!)
-  )
+  const drgHder = new dragHandler(elIconGrpCtn.value!);
+  elIconGrp.value!.ondragstart = e => drgHder.start(e)
+  elIconGrp.value!.ondragover = e => drgHder.over(e)
+  elIconGrp.value!.ondragenter = e => drgHder.enter(e)
+  elIconGrp.value!.ondrop = e => drgHder.drop(e)
+
 })
 </script>
 
 <style scoped lang="scss">
-@include rotate-ani(-.5rem, 0);
-
+@include rotate-ani(0, -.5rem);
+@include move-ani(0, -.5rem);
 
 .icon-group {
   --grid-box-size-w: calc(var(--icon-size) * 3);
   --grid-box-size-h: calc(var(--icon-size) * 3);
+  position: relative;
   border: red 1px solid;
   /* Set the icon size here */
   @include display-c;

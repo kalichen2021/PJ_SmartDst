@@ -34,7 +34,9 @@ const _mMoveHandler = (e: MouseEvent) => {
   }
 }
 
-export function dragHandler(e: MouseEvent, el: HTMLElement) {
+const _mUpHandler = (e: MouseEvent) => {}
+
+export function _dragHandler(e: MouseEvent, el: HTMLElement) {
   e.preventDefault()
   startX = e.clientX
   startY = e.clientY
@@ -45,4 +47,25 @@ export function dragHandler(e: MouseEvent, el: HTMLElement) {
 
   document.addEventListener('mousemove', (e) => _mMoveHandler(e))
   document.addEventListener('mouseup', (e) => _mUpHandler(e))
+}
+
+export class dragHandler {
+  targetEl: HTMLElement | null = null
+
+  constructor(el: HTMLElement) {
+    this.targetEl = el
+  }
+
+  start(e: DragEvent) {
+    console.log('start')
+    e.dataTransfer!.effectAllowed = 'move'
+  }
+  over(e: DragEvent) {
+    e.preventDefault()
+  }
+  enter(e: DragEvent) {}
+
+  drop(e: DragEvent) {
+    console.log(e.target)
+  }
 }
