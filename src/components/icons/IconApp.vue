@@ -1,5 +1,5 @@
 <template>
-  <div class="icon-item">
+  <div class="icon-item" draggable="false">
     <img src="/favicon.ico" :alt="props.name">
     <span>{{ props.name }}</span>
   </div>

@@ -1,9 +1,9 @@
 <template>
-  <div class="icon-group" draggable="false" ref="elIconGrp">
-    <div class="border-container" draggable="true" ref="elIconGrpCtn">
-      <span class="bar controller" ref="elGrabBar"><icon-bar /></span>
+  <div class="icon-group" ref="elIconGrp">
+    <div class="border-container" ref="elIconGrpCtn">
+      <span class="bar controller" draggable="true" ref="elGrabBar"><icon-bar /></span>
       <div class="container">
-        <div v-for="icon in icons" :key="icon.id">
+        <div v-for="icon in icons" :key="icon.id" draggable="false">
           <icon-app :name="icon.name" />
         </div>
       </div>
@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
-import { rightClickHandler, resize, dragHandler } from './utils/IconGroup.tsx';
+import { rightClickHandler, resize, dragHandler, moveHandler } from './utils/IconGroup.tsx';
 import IconApp from './icons/IconApp.vue';
 import IconBar from './icons/IconBar.vue';
 import IconMore from './icons/IconMore.vue';
@@ -66,22 +66,15 @@ onMounted(() => {
    * 编辑状态下，文件图标组的控制器可拖动、缩放
    */
 
-  // 监听文件图标组是否为编辑状态
-  // watchEffect(() => {
-  //   console.log(isElIconGrpCtnConf.value)
-  //   // 显示操作控件
-  //   if (isElIconGrpCtnConf.value) {
-  //     console.log(GrpCtnCotroller);
-  //     [...GrpCtnCotroller].forEach((el) => el!.style.display = "block")
-  //   }
-  // })
 
   // 右键设置
   elIconGrpCtn.value!.addEventListener("contextmenu", (e) => {
     e.preventDefault();
     console.log("right click")
     console.log(elCtnMenu.value)
+    // 已经右键
     isRightClicked.value = true
+    elGrabBar.value!.draggable = true
     // elCtnMenu.value!.style.display = "block"
     // showCtnMenu()
     // rightClickHandler(elIconGrpCtn.value!, isRightClicked, isElIconGrpCtnConf);
@@ -94,12 +87,13 @@ onMounted(() => {
   }
 
   // 拖动事件
-  const drgHder = new dragHandler(elIconGrp.value!);
-  elIconGrpCtn.value!.ondragstart = e => drgHder.start(e)
-  elIconGrpCtn.value!.ondrag = e => drgHder.process(e)
-  elIconGrpCtn.value!.ondragover = e => drgHder.over(e)
-  elIconGrpCtn.value!.ondragenter = e => drgHder.enter(e)
-  elIconGrpCtn.value!.ondrop = e => drgHder.drop(e)
+  const mvHder = new moveHandler(elIconGrp.value!);
+  elGrabBar.value!.onmousedown = (e) => mvHder.apply(e);
+  // elGrabBar.value!.ondragstart = e => mvHder.start(e)
+  // elGrabBar.value!.ondrag = e => mvHder.process(e)
+  // elGrabBar.value!.ondragover = e => mvHder.over(e)
+  // elGrabBar.value!.ondragenter = e => mvHder.enter(e)
+  // elGrabBar.value!.ondrop = e => mvHder.drop(e)
 
 })
 </script>
@@ -130,6 +124,7 @@ onMounted(() => {
   @include display-c;
   width: calc(var(--icon-size)*1/4 + var(--grid-box-size-w));
   height: calc(var(--icon-size)*1/3 + var(--grid-box-size-h));
+  user-select: none;
 }
 
 .border-container .controller {

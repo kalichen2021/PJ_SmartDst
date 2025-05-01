@@ -21,87 +21,91 @@ export function resize(el: HTMLElement) {
   // el.addEventListener("")
 }
 
-let startX: number, startY: number, initLeft: number, initTop: number
-let drugEl: HTMLElement | null = null
-let isDrugging = false
-
-const _mMoveHandler = (e: MouseEvent) => {
-  if (isDrugging) {
-    const moveX = e.clientX - startX
-    const moveY = e.clientY - startY
-    drugEl!.style.left = `${initLeft + moveX}px`
-    drugEl!.style.top = `${initTop + moveY}px`
-  }
-}
-
-const _mUpHandler = (e: MouseEvent) => {}
-
-export function _dragHandler(e: MouseEvent, el: HTMLElement) {
-  e.preventDefault()
-  startX = e.clientX
-  startY = e.clientY
-  initLeft = el.getBoundingClientRect().left
-  initTop = el.getBoundingClientRect().top
-  drugEl = el
-  isDrugging = true
-
-  document.addEventListener('mousemove', (e) => _mMoveHandler(e))
-  document.addEventListener('mouseup', (e) => _mUpHandler(e))
-}
-
 export class dragHandler {
   targetEl: HTMLElement
   startX: number = 0
   startY: number = 0
+  isDragging: boolean = false
+  animationFrameId: number | null = null
+  currentX: number = 0
+  currentY: number = 0
 
   constructor(el: HTMLElement) {
     this.targetEl = el
+
+    // this.targetEl.addEventListener('mousedown', this.start.bind(this))
+  }
+  apply(e: MouseEvent) {
+    // 绑定事件
+    this._start(e)
   }
 
-  start(e: DragEvent) {
-    // const originAxis = this.targetEl.getBoundingClientRect()
-    this.startX = e.clientX
-    this.startY = e.clientY
-
-    // this.targetEl!.style.left = ''
-    // this.targetEl!.style.top = ''
-
-    // e.dataTransfer!.setData('text/plain', e.target!.id)
-    // 创建透明占位元素, 避免拖动时出现默认的占位效果
-    const ghost = document.createElement('div')
-    ghost.style.opacity = '0'
-    e.dataTransfer!.setDragImage(ghost, 0, 0)
-    e.dataTransfer!.effectAllowed = 'move'
-    console.log(`Drag started at (${this.startX}, ${this.startY})`)
-  }
-
-  process(e: DragEvent) {
+  _start(e: MouseEvent) {
     e.preventDefault()
-    const deltaX = e.clientX - this.startX
-    const deltaY = e.clientY - this.startY
-    this.targetEl!.style.transform = `translate(${deltaX}px, ${deltaY}px)`
-    console.log(`Element moved to (${deltaX}, ${deltaY})`)
+    this.isDragging = true
+    this.startX = e.clientX - (parseInt(this.targetEl.style.left || '0', 10) || 0)
+    this.startY = e.clientY - (parseInt(this.targetEl.style.top || '0', 10) || 0)
+
+    // 动态绑定事件
+    document.addEventListener('mousemove', this._process.bind(this))
+    document.addEventListener('mouseup', this._stop.bind(this))
+
+    console.log('Drag started')
   }
 
-  over(e: DragEvent) {
+  _process(e: MouseEvent) {
+    if (!this.isDragging) return
+
     e.preventDefault()
+    this.currentX = e.clientX - this.startX
+    this.currentY = e.clientY - this.startY
+
+    // 使用 requestAnimationFrame 优化 DOM 更新
+    if (this.animationFrameId === null) {
+      this.animationFrameId = requestAnimationFrame(() => {
+        this.targetEl.style.left = `${this.currentX}px`
+        this.targetEl.style.top = `${this.currentY}px`
+        console.log(`Dragging: (${this.currentX}, ${this.currentY})`)
+        this.animationFrameId = null
+      })
+    }
   }
 
-  enter(e: DragEvent) {
-    // console.log(`Drag entered ${e.target.id} area`)
-  }
+  _stop(e: MouseEvent) {
+    if (!this.isDragging) return
 
-  drop(e: DragEvent) {
     e.preventDefault()
-    const finalX = e.clientX - this.startX
-    const finalY = e.clientY - this.startY
-    // this.targetEl!.style.transform = `translate(${finalX}px, ${finalY}px)`
-    // console.log(`Drag dropped at (${finalX}, ${finalY})`)
-    // 若之前移动过，则加上当前的偏移量
-    const curLeft = +this.targetEl.style.left.replace('px', '')
-    const curtop = +this.targetEl.style.top.replace('px', '')
-    this.targetEl!.style.left = `${finalX + curLeft}px`
-    this.targetEl!.style.top = `${finalY + curtop}px`
-    this.targetEl!.style.transform = ''
+    this.isDragging = false
+
+    // 动态移除事件
+    document.removeEventListener('mousemove', this._process.bind(this))
+    document.removeEventListener('mouseup', this._stop.bind(this))
+
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId)
+      this.animationFrameId = null
+    }
+
+    console.log('Drag stopped')
+  }
+}
+
+export class moveHandler extends dragHandler {
+  constructor(el: HTMLElement) {
+    super(el)
+  }
+
+  test() {
+    console.log(this)
+  }
+}
+
+export class scaleHandler extends dragHandler {
+  constructor(el: HTMLElement) {
+    super(el)
+  }
+
+  test() {
+    console.log(this.targetEl)
   }
 }
