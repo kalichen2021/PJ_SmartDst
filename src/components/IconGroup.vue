@@ -1,6 +1,6 @@
 <template>
-  <div class="icon-group" draggable="true" ref="elIconGrp">
-    <div class="border-container" ref="elIconGrpCtn">
+  <div class="icon-group" draggable="false" ref="elIconGrp">
+    <div class="border-container" draggable="true" ref="elIconGrpCtn">
       <span class="bar controller" ref="elGrabBar"><icon-bar /></span>
       <div class="container">
         <div v-for="icon in icons" :key="icon.id">
@@ -94,11 +94,12 @@ onMounted(() => {
   }
 
   // 拖动事件
-  const drgHder = new dragHandler(elIconGrpCtn.value!);
-  elIconGrp.value!.ondragstart = e => drgHder.start(e)
-  elIconGrp.value!.ondragover = e => drgHder.over(e)
-  elIconGrp.value!.ondragenter = e => drgHder.enter(e)
-  elIconGrp.value!.ondrop = e => drgHder.drop(e)
+  const drgHder = new dragHandler(elIconGrp.value!);
+  elIconGrpCtn.value!.ondragstart = e => drgHder.start(e)
+  elIconGrpCtn.value!.ondrag = e => drgHder.process(e)
+  elIconGrpCtn.value!.ondragover = e => drgHder.over(e)
+  elIconGrpCtn.value!.ondragenter = e => drgHder.enter(e)
+  elIconGrpCtn.value!.ondrop = e => drgHder.drop(e)
 
 })
 </script>
@@ -117,7 +118,10 @@ onMounted(() => {
   width: calc(var(--icon-size) + var(--grid-box-size-w));
   height: calc(var(--icon-size) + var(--grid-box-size-h));
 
+  // user-select: none;
+  // -webkit-user-drag: none;
 }
+
 
 .border-container {
   position: relative;
