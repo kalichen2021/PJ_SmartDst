@@ -1,13 +1,15 @@
 <template>
   <div class="icon-group" ref="elIconGrp">
     <div class="border-container" ref="elIconGrpCtn">
+      <!-- 拖动控件 -->
       <span class="bar controller" draggable="true" ref="elGrabBar"><icon-bar /></span>
       <div class="container">
         <div v-for="icon in icons" :key="icon.id" draggable="false">
           <icon-app :name="icon.name" />
         </div>
       </div>
-      <span class="scaler controller"><icon-arrows-rotate /></span>
+      <!-- 缩放控件 -->
+      <span class="scaler controller" ref="elScaler"><icon-arrows-rotate /></span>
     </div>
     <CtnMenu :is-invisible="isRightClicked">
       <IconMore @click="elIconMoreClick" />
@@ -18,7 +20,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
-import { rightClickHandler, resize, dragHandler, moveHandler } from './utils/IconGroup.tsx';
+import { rightClickHandler, resize, moveHandler, scaleHandler } from './utils/IconGroup.tsx';
 import IconApp from './icons/IconApp.vue';
 import IconBar from './icons/IconBar.vue';
 import IconMore from './icons/IconMore.vue';
@@ -42,6 +44,7 @@ const icons = ref([
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
 const elGrabBar = ref<HTMLElement | null>(null)
+const elScaler = ref<HTMLElement | null>(null)
 const elCtnMenu = ref<HTMLElement | null>(null)
 
 const isRightClicked = ref(false)
@@ -86,9 +89,11 @@ onMounted(() => {
     [...GrpCtnCotroller].forEach((el) => el!.style.display = "block")
   }
 
-  // 拖动事件
+  // 控件事件
   const mvHder = new moveHandler(elIconGrp.value!);
+  const sclHder = new scaleHandler(elIconGrp.value!);
   elGrabBar.value!.onmousedown = (e) => mvHder.apply(e);
+  // elScaler.value!.onmousedown = (e) => sclHder.apply(e);
   // elGrabBar.value!.ondragstart = e => mvHder.start(e)
   // elGrabBar.value!.ondrag = e => mvHder.process(e)
   // elGrabBar.value!.ondragover = e => mvHder.over(e)
@@ -102,15 +107,27 @@ onMounted(() => {
 @include rotate-ani(0, -.5rem);
 @include move-ani(0, -.5rem);
 
+// tips: 不同单位变量换算用calc()
+$app-text-size: 0.1rem;
+$ctn-padding: 0.25rem;
+$icon-w: $icon-size;
+$icon-h: calc($icon-size + $app-text-size);
+
+$grid-box-size-w: calc($icon-w * 3);
+$grid-box-size-h: calc($icon-h * 3);
+$grp-padding-w: calc($icon-w * 0.5 - $ctn-padding);
+$grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
+
+
 .icon-group {
-  --grid-box-size-w: calc(var(--icon-size) * 3);
-  --grid-box-size-h: calc(var(--icon-size) * 3);
   position: relative;
-  border: red 1px solid;
-  /* Set the icon size here */
-  @include display-c;
-  width: calc(var(--icon-size) + var(--grid-box-size-w));
-  height: calc(var(--icon-size) + var(--grid-box-size-h));
+  // tips: outline 相比 border 不会影响元素的尺寸
+  outline: red 1px solid;
+  @include display-lt;
+  width: fit-content;
+  height: fit-content;
+  // tips: padding: <padding-col> <>padding-row>
+  padding: #{$grp-padding-h} #{$grp-padding-w};
 
   // user-select: none;
   // -webkit-user-drag: none;
@@ -119,12 +136,16 @@ onMounted(() => {
 
 .border-container {
   position: relative;
-  border: 1px solid #ff0000;
+  outline: 1px solid #ff0000;
   border-radius: 1rem;
+  padding: $ctn-padding;
   @include display-c;
-  width: calc(var(--icon-size)*1/4 + var(--grid-box-size-w));
-  height: calc(var(--icon-size)*1/3 + var(--grid-box-size-h));
+  // width: calc(var(--icon-size)*1/4 + var(--grid-box-size-w));
+  // height: calc(var(--icon-size)*1/3 + var(--grid-box-size-h));
   user-select: none;
+
+  overflow: hidden;
+  // resize: both;
 }
 
 .border-container .controller {
@@ -159,17 +180,25 @@ onMounted(() => {
 
 .container {
   // border: red 1px solid;
+  // 加上内边距
+  --grid-col-size: calc(var(--icon-size) - var(--ctn-padding)*2);
+  // 减去应用名称文本高度
+  --grid-row-size: calc(var(--icon-size) - .15rem - var(--ctn-padding)*2);
   display: grid;
   /* 3*3布局，每个格子最大为32px, 超出3行scroll*/
 
   /* gap: 10px; */
-  grid-template-columns: repeat(3, var(--icon-size));
-  grid-template-rows: repeat(3, var(--icon-size));
+  grid-template-columns: repeat(auto-fit, minmax(#{$icon-w}, 1fr));
+  // 减去文本高度
+  grid-template-rows: repeat(auto-fit, minmax(#{$icon-h}, 1fr));
 
   overflow-y: auto;
   overflow-x: hidden;
-  max-width: var(--grid-box-size-w);
-  max-height: var(--grid-box-size-h);
+  max-width: #{$grid-box-size-w};
+  max-height: #{$grid-box-size-h};
+
+  // 改变容器大小
+  resize: both;
 }
 
 /* 设置滚动条样式 */
@@ -197,6 +226,7 @@ onMounted(() => {
 }
 
 span {
+  width: 100%;
   font-size: 0.9rem;
   color: var(color-text);
   text-align: center;

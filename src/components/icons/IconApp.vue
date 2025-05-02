@@ -19,8 +19,8 @@ const props = defineProps({
 .icon-item {
   max-width: var(--icon-size);
   max-height: var(--icon-size);
-  padding: .2rem;
-  margin: .2rem;
+  /* padding: .2rem;
+  margin: .2rem; */
   object-fit: cover;
   transition: all 0.3s ease;
 
@@ -30,7 +30,7 @@ const props = defineProps({
   align-items: center;
 
   border-radius: .2rem;
-  /* border: 1px solid #000; */
+  /* border: 1px solid #f5f5f5; */
 
   overflow: hidden;
 }

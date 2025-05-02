@@ -22,13 +22,23 @@ export function resize(el: HTMLElement) {
 }
 
 export class dragHandler {
+  /** 操作对象 */
   targetEl: HTMLElement
+
+  /** 鼠标的初始x坐标 */
   startX: number = 0
+
+  /** 鼠标的初始y坐标 */
   startY: number = 0
+
+  /** 鼠标的当前x坐标 */
+  currentX: number = 0
+
+  /** 鼠标的当前y坐标 */
+  currentY: number = 0
+
   isDragging: boolean = false
   animationFrameId: number | null = null
-  currentX: number = 0
-  currentY: number = 0
 
   constructor(el: HTMLElement) {
     this.targetEl = el
@@ -43,8 +53,8 @@ export class dragHandler {
   _start(e: MouseEvent) {
     e.preventDefault()
     this.isDragging = true
-    this.startX = e.clientX - (parseInt(this.targetEl.style.left || '0', 10) || 0)
-    this.startY = e.clientY - (parseInt(this.targetEl.style.top || '0', 10) || 0)
+    this.startX = e.clientX
+    this.startY = e.clientY
 
     // 动态绑定事件
     document.addEventListener('mousemove', this._process.bind(this))
@@ -63,12 +73,14 @@ export class dragHandler {
     // 使用 requestAnimationFrame 优化 DOM 更新
     if (this.animationFrameId === null) {
       this.animationFrameId = requestAnimationFrame(() => {
-        this.targetEl.style.left = `${this.currentX}px`
-        this.targetEl.style.top = `${this.currentY}px`
-        console.log(`Dragging: (${this.currentX}, ${this.currentY})`)
+        this._processInnerFunc()
         this.animationFrameId = null
       })
     }
+  }
+
+  _processInnerFunc() {
+    null
   }
 
   _stop(e: MouseEvent) {
@@ -94,6 +106,22 @@ export class moveHandler extends dragHandler {
   constructor(el: HTMLElement) {
     super(el)
   }
+  _start(e: MouseEvent): void {
+    super._start(e)
+    this.startX -= this.targetElAxis.x0
+    this.startY -= this.targetElAxis.y0
+  }
+
+  _processInnerFunc(): void {
+    this.targetEl.style.left = `${this.currentX}px`
+    this.targetEl.style.top = `${this.currentY}px`
+  }
+
+  private get targetElAxis() {
+    const x0 = parseInt(this.targetEl.style.left || '0', 10) || 0
+    const y0 = parseInt(this.targetEl.style.top || '0', 10) || 0
+    return { x0, y0 }
+  }
 
   test() {
     console.log(this)
@@ -101,8 +129,23 @@ export class moveHandler extends dragHandler {
 }
 
 export class scaleHandler extends dragHandler {
+  elStartWidth: number
+  elStartHeight: number
   constructor(el: HTMLElement) {
     super(el)
+    this.elStartWidth = this.targetEl.offsetWidth
+    this.elStartHeight = this.targetEl.offsetHeight
+    console.log(this.elStartWidth)
+  }
+  _processInnerFunc() {
+    this.targetEl.style.width = `${this.elStartWidth + this.scaleAxis.dx}px`
+    this.targetEl.style.height = `${this.elStartHeight + this.scaleAxis.dy}px`
+  }
+
+  private get scaleAxis() {
+    const dx = this.currentX - this.startX
+    const dy = this.currentY - this.startY
+    return { dx, dy }
   }
 
   test() {

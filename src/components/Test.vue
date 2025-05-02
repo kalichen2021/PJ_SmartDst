@@ -20,6 +20,8 @@ const isInvisible = ref(false)
   height: 500px;
   width: 200px;
   background-color: rgba(240, 248, 255, 0.493);
+  overflow: auto;
+  resize: both;
 }
 
 .txt {
