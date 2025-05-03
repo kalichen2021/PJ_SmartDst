@@ -136,7 +136,10 @@ $grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
 
 
 .icon-group {
-  position: relative;
+  // 节省重绘开销
+  position: fixed;
+  top: 0;
+  left: 0;
   // tips: outline 相比 border 不会影响元素的尺寸
   outline: red 1px solid;
   @include display-lt;
@@ -147,6 +150,9 @@ $grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
 
   // user-select: none;
   // -webkit-user-drag: none;
+  // 使用GPU加速
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 

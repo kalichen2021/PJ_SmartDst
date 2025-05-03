@@ -35,13 +35,11 @@ export const clickSwhToHide = (
   excludeElementGrp = toArray(excludeElementGrp);
   willHiddenElement = toArray(willHiddenElement);
 
-  console.log({ excludeElementGrp, willHiddenElement })
   const _isExcludeEl = (targetEl: HTMLElement): boolean => {
     // tips: 使用return时注意多层嵌套
     let _r = false;
     [...excludeElementGrp, ...willHiddenElement].forEach((el) => {
       // if (isInDom(targetEl, el)) return true;;
-      console.log("isInDom", targetEl, el)
       if (isInDom(targetEl, el)) {
         _r = true;
         return;
@@ -51,7 +49,6 @@ export const clickSwhToHide = (
   };
 
   const _hide = (e: MouseEvent) => {
-    console.log(_isExcludeEl(e.target as HTMLElement))
     if (_isExcludeEl(e.target as HTMLElement)) {
       return;
     };
@@ -65,3 +62,9 @@ export const clickSwhToHide = (
 
   document.addEventListener("mousedown", _hide);
 };
+
+export const logPerformance = (label: string): void => {
+  console.time(label);
+  // 执行需要监控的代码
+  console.timeEnd(label);
+}

@@ -109,13 +109,21 @@ export class moveHandler extends dragHandler {
   }
 
   _processInnerFunc(): void {
-    this.targetEl.style.left = `${this.curRelX}px`
-    this.targetEl.style.top = `${this.curRelY}px`
+    // this.targetEl.style.left = `${this.curRelX}px`
+    // this.targetEl.style.top = `${this.curRelY}px`
+    // 使用 transform 替代 left 和 top
+    console.log(this.curRelX)
+    this.targetEl.style.transform = `translate(${this.curRelX}px, ${this.curRelY}px)`
   }
 
   private get targetElAxis() {
-    const x0 = parseInt(this.targetEl.style.left || '0', 10) || 0
-    const y0 = parseInt(this.targetEl.style.top || '0', 10) || 0
+    // const x0 = parseInt(this.targetEl.style.left || '0', 10) || 0
+    // const y0 = parseInt(this.targetEl.style.top || '0', 10) || 0
+    const transform = this.targetEl.style.transform || 'translate(0px, 0px)'
+    const match = transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/)
+    const x0 = match ? parseFloat(match[1]) : 0
+    const y0 = match ? parseFloat(match[2]) : 0
+
     return { x0, y0 }
   }
 
