@@ -17,10 +17,6 @@ export function rightClickHandler(
   })
 }
 
-export function resize(el: HTMLElement) {
-  // el.addEventListener("")
-}
-
 export class dragHandler {
   /** 操作对象 */
   targetEl: HTMLElement
@@ -31,11 +27,11 @@ export class dragHandler {
   /** 鼠标的初始y坐标 */
   startY: number = 0
 
-  /** 鼠标的当前x坐标 */
-  currentX: number = 0
+  /** 鼠标的当前相对x坐标 */
+  curRelX: number = 0
 
-  /** 鼠标的当前y坐标 */
-  currentY: number = 0
+  /** 鼠标的当前相对y坐标 */
+  curRelY: number = 0
 
   isDragging: boolean = false
   animationFrameId: number | null = null
@@ -67,8 +63,8 @@ export class dragHandler {
     if (!this.isDragging) return
 
     e.preventDefault()
-    this.currentX = e.clientX - this.startX
-    this.currentY = e.clientY - this.startY
+    this.curRelX = e.clientX - this.startX
+    this.curRelY = e.clientY - this.startY
 
     // 使用 requestAnimationFrame 优化 DOM 更新
     if (this.animationFrameId === null) {
@@ -113,8 +109,8 @@ export class moveHandler extends dragHandler {
   }
 
   _processInnerFunc(): void {
-    this.targetEl.style.left = `${this.currentX}px`
-    this.targetEl.style.top = `${this.currentY}px`
+    this.targetEl.style.left = `${this.curRelX}px`
+    this.targetEl.style.top = `${this.curRelY}px`
   }
 
   private get targetElAxis() {
@@ -131,21 +127,50 @@ export class moveHandler extends dragHandler {
 export class scaleHandler extends dragHandler {
   elStartWidth: number
   elStartHeight: number
-  constructor(el: HTMLElement) {
+  unitSize: { width: number; height: number }
+  _startFnCallback: () => void
+  _stopFnCallback: () => void
+
+  constructor(
+    el: HTMLElement,
+    unitSize: { width: number; height: number },
+    _startFnCallback: () => void,
+    _stoptFnCallback: () => void,
+  ) {
     super(el)
     this.elStartWidth = this.targetEl.offsetWidth
     this.elStartHeight = this.targetEl.offsetHeight
-    console.log(this.elStartWidth)
+    this.unitSize = unitSize
+    this._startFnCallback = _startFnCallback
+    this._stopFnCallback = _stoptFnCallback
   }
-  _processInnerFunc() {
-    this.targetEl.style.width = `${this.elStartWidth + this.scaleAxis.dx}px`
-    this.targetEl.style.height = `${this.elStartHeight + this.scaleAxis.dy}px`
+  private getFixedSize(curWidth: number, curHeight: number) {
+    // mutiple width and height, 单位长度
+    const unitWidth = this.unitSize.width
+    const unitHeight = this.unitSize.height
+    const mult_w = Math.floor(curWidth / unitWidth) * unitWidth || unitWidth
+    const mult_h = Math.floor(curHeight / unitHeight) * unitHeight || unitHeight
+    return { mult_w, mult_h }
   }
 
-  private get scaleAxis() {
-    const dx = this.currentX - this.startX
-    const dy = this.currentY - this.startY
-    return { dx, dy }
+  _start(e: MouseEvent): void {
+    super._start(e)
+    this._startFnCallback()
+  }
+
+  _processInnerFunc() {
+    const fixedSize = this.getFixedSize(
+      this.elStartWidth + this.curRelX,
+      this.elStartHeight + this.curRelY,
+    )
+    this.targetEl.style.width = `${fixedSize.mult_w}px`
+    this.targetEl.style.height = `${fixedSize.mult_h}px`
+    // console.log(this.scaleAxis.dx)
+  }
+
+  _stop(e: MouseEvent): void {
+    super._stop(e)
+    this._stopFnCallback()
   }
 
   test() {

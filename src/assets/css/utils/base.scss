@@ -53,8 +53,18 @@
 /* value */
 :root {
   --icon-size: 64px;
+  --app-text-size: 0.1rem;
+  --ctn-padding: 0.25rem;
+
+  --icon-w: --icon-size;
+  --icon-h: calc(var(--icon-size) + var(--app-text-size));
 }
+
+$ctn-padding: 0.25rem;
+$app-text-size: 0.1rem;
 $icon-size: 64px;
+$icon-w: $icon-size;
+$icon-h: calc($icon-size + $app-text-size);
 
 *,
 *::before,

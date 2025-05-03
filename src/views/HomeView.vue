@@ -6,6 +6,9 @@ import Test from '@/components/Test.vue';
 <template>
   <main>
     <IconGroup />
+    <IconGroup />
+    <IconGroup />
+    <IconGroup />
     <Test />
   </main>
 </template>

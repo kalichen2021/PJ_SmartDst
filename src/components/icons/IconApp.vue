@@ -19,8 +19,8 @@ const props = defineProps({
 .icon-item {
   max-width: var(--icon-size);
   max-height: var(--icon-size);
-  /* padding: .2rem;
-  margin: .2rem; */
+  padding: .2rem;
+  margin: .2rem;
   object-fit: cover;
   transition: all 0.3s ease;
 
