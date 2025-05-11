@@ -10,3 +10,16 @@ export const useCounterStore = defineStore('counter', () => {
 
   return { count, doubleCount, increment }
 })
+
+export const useElementStore = defineStore('element', () => {
+  const
+    intervalX = ref(0),
+    intervalY = ref(0);
+
+  const setIntervalXY = (x: number, y: number) => {
+    intervalX.value = x
+    intervalY.value = y
+  }
+
+  return { intervalX, intervalY, setIntervalXY }
+})

@@ -4,6 +4,29 @@ import type { itemOrArray } from "./type";
 
 
 
+export const getRandom = (min: number, max: number): number =>
+  Math.random() * (max - min) + min;
+
+export const toArray = <T>(i: itemOrArray<T>): T[] => {
+  if (Array.isArray(i)) return i
+  return [i];
+}
+
+// export const isKeyOfInterface = <T>(key: string | number | symbol): key is keyof T => {
+//   return true;
+// }
+
+
+
+// 获得css根变量
+export const getCssVal = (valName: string) => {
+  const root = document.documentElement;
+  const cssVar = getComputedStyle(root);
+  return cssVar.getPropertyValue(valName).trim();
+
+}
+
+
 export const isInDom = (el: HTMLElement, parent: HTMLElement): boolean => {
   if (el === parent) {
     return true;
@@ -12,11 +35,6 @@ export const isInDom = (el: HTMLElement, parent: HTMLElement): boolean => {
     return false;
   }
   return el.parentElement !== null && isInDom(el.parentElement, parent);
-}
-
-export const toArray = <T>(i: itemOrArray<T>): T[] => {
-  if (Array.isArray(i)) return i
-  return [i];
 }
 
 

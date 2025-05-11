@@ -20,6 +20,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
+import { useElementStore } from '@/stores/counter';
 import { rightClickHandler, moveHandler, scaleHandler } from './utils/IconGroup.tsx';
 import type { TP_entryConf } from '@/assets/js/type'
 
@@ -42,7 +43,23 @@ const icons = ref([
   { id: 8, name: 'camera' },
   { id: 9, name: 'video' },
   { id: 10, name: 'music' },
+  { id: 7, name: 'star' },
+  { id: 8, name: 'camera' },
+  { id: 9, name: 'video' },
+  { id: 10, name: 'music' },
+  { id: 7, name: 'star' },
+  { id: 8, name: 'camera' },
+  { id: 9, name: 'video' },
+  { id: 10, name: 'music' },
+  { id: 7, name: 'star' },
+  { id: 8, name: 'camera' },
+  { id: 9, name: 'video' },
+  { id: 10, name: 'music' },
+
 ]);
+
+const elStore = useElementStore()
+const { setIntervalXY } = elStore
 
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
@@ -94,6 +111,7 @@ onMounted(() => {
 
   // 控件事件
   const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
+  setIntervalXY(iconSize.width, iconSize.height)
   const mvHder = new moveHandler(elIconGrp.value!);
   const sclHder = new scaleHandler(
     elGridCtn.value!,

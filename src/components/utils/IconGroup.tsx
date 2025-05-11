@@ -1,5 +1,4 @@
 import { h, render, type Ref } from 'vue'
-import IconMore from '@/components/icons/IconMore.vue'
 
 export function hoverHandler() {}
 
