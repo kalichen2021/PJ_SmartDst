@@ -1,5 +1,5 @@
-import type { CanvasItem, SetNumAttrOption, isKeyOf, ParticleNumAttr } from "./type.ts";
-import { getRandom } from "./utils.ts";
+import type { CanvasItem, SetNumAttrOption, isKeyOf, ParticleNumAttr, itemOrArray } from "./type.ts";
+import { getRandom, toArray } from "./utils.ts";
 
 
 
@@ -174,7 +174,10 @@ export class Particle extends canvasInfo {
     //   }
   }
 
-  animate(...options: SetNumAttrOption<ParticleNumAttr>[]) {
+  animate(
+    options: itemOrArray<SetNumAttrOption<ParticleNumAttr>>,
+    callback?: (curObj: Particle) => void,
+  ) {
     const _pna: ParticleNumAttr = {
       x: 0,
       y: 0,
@@ -183,9 +186,10 @@ export class Particle extends canvasInfo {
       dy: 0,
       dr: 0,
     }
+    options = toArray(options)
 
     const _setAttr = (
-      option: {
+      _option: {
         key: keyof ParticleNumAttr
         value: number
         duration: number
@@ -193,24 +197,26 @@ export class Particle extends canvasInfo {
       }
     ) => {
       const
-        startAttr = this[option.key],
-        endAttr = option.value,
-        t0 = Date.now()
-      const dT = (endAttr - startAttr) / option.duration
+        startAttr = this[_option.key],
+        endAttr = _option.value
+      const
+        t0 = Date.now(),
+        dT = (endAttr - startAttr) / _option.duration
 
       const _process = () => {
         const dt = Date.now() - t0;
-        this[option.key] = startAttr + dT * dt;
-        // console.log(option.key)
-        if (dt >= option.duration) {
-          this[option.key] = endAttr;
+        this[_option.key] = startAttr + dT * dt;
+        if (dt >= _option.duration) {
+          this[_option.key] = endAttr;
           this.isAni = false
+          callback && callback(this)
           return;
         }
         requestAnimationFrame(_process);
       }
       _process();
     }
+
     for (const option of options) {
       let _key, _value
       for (const key in option) {
@@ -219,9 +225,10 @@ export class Particle extends canvasInfo {
           _value = option[_key]
         }
       }
-      console.log(this.isAni)
+      // console.log(this.isAni)
       if (!this.isAni) {
         this.isAni = true
+        const _startVal = this[_key!]
         _setAttr({
           key: _key!,
           value: _value!,

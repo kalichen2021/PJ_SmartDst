@@ -55,20 +55,42 @@ watch(
     }
     // console.log(particles)
     backMedia.addItem<Particle>(particles)
+    // backMedia.addItem<Particle>([new Particle({
+    //   x: intervalX * 5,
+    //   y: intervalY * 5,
+    //   color: "rgba(0, 163, 123, 0.546)",
+    //   radius: 10,
+    // })])
 
     backMedia.process()
     document.addEventListener("mousemove", (e) => {
       const indexX = Math.floor(e.clientX / intervalX + .5)
       const indexY = Math.floor(e.clientY / intervalY + .5)
       if (indexX <= rows && indexY <= cols && indexX > 0 && indexY > 0) {
-        // _initRadius(backMedia.items as Particle[][])
         backMedia.getItem<Particle>(indexY - 1, indexX - 1)!.animate({
           radius: 20,
-          // dT: 2,
-          duration: 500
+          duration: 100
+        }, (_this) => {
+          _this.animate({
+            radius: 10,
+            duration: 500
+          })
         })
-        // backMedia.items[indexY - 1][indexX - 1].radius = 20
+
       }
+      // if (indexX == 5 && indexY == 5) {
+      //   // _initRadius(backMedia.items as Particle[][])
+      //   backMedia.getItem<Particle>(0, 0)!.animate({
+      //     radius: 20,
+      //     duration: 500
+      //   }, (_this) => {
+      //     _this.animate({
+      //       radius: 10,
+      //       duration: 100
+      //     })
+      //   })
+
+      // }
     })
   }
 )
