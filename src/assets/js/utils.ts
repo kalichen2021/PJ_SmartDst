@@ -12,6 +12,16 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
   return [i];
 }
 
+export const throttle = (func: Function, limit: number) => {
+  let inThrottle: boolean;
+  return function (this: any, ...args: any[]) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+};
 // export const isKeyOfInterface = <T>(key: string | number | symbol): key is keyof T => {
 //   return true;
 // }

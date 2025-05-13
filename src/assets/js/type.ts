@@ -8,18 +8,19 @@ export interface TP_entryConf {
 
 export type itemOrArray<T> = T | Array<T>
 
-export interface ParticleNumAttr {
-  x?: number
-  y?: number
-  radius?: number
-  dx?: number
-  dy?: number
-  dr?: number
+export type AniNumOpt = `+${number}` | `-${number}` | number
+
+export interface ParticleNumAttr<T = number> {
+  x?: T
+  y?: T
+  radius?: T
+  dx?: T
+  dy?: T
+  dr?: T
 }
 
-export type SetNumAttrOption<T> = {
-  [key in keyof T]: number;
-} & {
+
+export type SetNumAttrOption<T> = T & {
   duration: number;
   // dT: number;
   re?: boolean

@@ -1,76 +1,66 @@
-import type { CanvasItem, SetNumAttrOption, isKeyOf, ParticleNumAttr, itemOrArray } from "./type.ts";
+import type { CanvasItem, SetNumAttrOption, ParticleNumAttr, itemOrArray, AniNumOpt } from "./type.ts";
 import { getRandom, toArray } from "./utils.ts";
-
-
 
 class canvasInfo {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 
-  constructor(
-    canvas: HTMLCanvasElement = document.getElementById("back-media") as HTMLCanvasElement
-  ) {
+  constructor(canvas: HTMLCanvasElement = document.getElementById("back-media") as HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
   }
-
 }
 
-
 export class canvasOperator extends canvasInfo {
-  items: Array<CanvasItem | CanvasItem[]> | null
-  constructor(
-    canvas: HTMLCanvasElement | undefined = undefined
-  ) {
-    super(canvas)
-    this.items = null
+  items: Array<CanvasItem | CanvasItem[]> | null = null;
+
+  constructor(canvas?: HTMLCanvasElement) {
+    super(canvas);
   }
-  init(
-    option = {
-      dynamicResize: true
-    }
-  ) {
+
+  /**
+   * 初始化画布
+   * @param option 配置选项
+   */
+  init(option = { dynamicResize: true }) {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
-    // this.ctx.scale(devicePixelRatio, devicePixelRatio);
-    // this.clear();
-    window.addEventListener("resize", () => {
-      this.init();
-    });
-  }
 
-  _process(objArray: CanvasItem[], ...update: ((objArray: CanvasItem[]) => void)[]) {
-    for (const _update of update) {
-      _update(objArray)
+    if (option.dynamicResize) {
+      const resizeHandler = () => {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      };
+      window.removeEventListener("resize", resizeHandler); // 避免重复绑定
+      window.addEventListener("resize", resizeHandler);
     }
-    this.draw(objArray)
-    requestAnimationFrame(() => this._process(objArray, ...update));
-
   }
 
-  __process(drawParam: Array<CanvasItem | CanvasItem[]>, ...update: ((objArray: CanvasItem[]) => void)[]) {
-    const _f = () => {
-      this.clear();
-      this.draw(drawParam);
-      requestAnimationFrame(() => _f)
-    }
-    _f()
-  }
+  /**
+   * 处理并绘制画布内容
+   * @param drawParam 绘制参数
+   * @param update 更新函数
+   */
   process(drawParam?: Array<CanvasItem | CanvasItem[]>, ...update: ((objArray: CanvasItem[]) => void)[]) {
-    const _f = () => {
-      const param = drawParam ? drawParam : this.items
+    const _processFrame = () => {
+      const param = drawParam || this.items;
       if (param) {
         this.clear();
         this.draw(param);
-      } else {
+        for (const updater of update) {
+          updater(param as CanvasItem[]);
+        }
       }
-      requestAnimationFrame(() => _f())
-    }
-    _f()
+      requestAnimationFrame(_processFrame);
+    };
+    _processFrame();
   }
 
+  /**
+   * 绘制画布内容
+   * @param objArray 画布对象数组
+   */
   draw(objArray: Array<CanvasItem | CanvasItem[]>) {
-    // this.clear();
     for (const obj of objArray) {
       if (Array.isArray(obj)) {
         this.draw(obj);
@@ -80,28 +70,37 @@ export class canvasOperator extends canvasInfo {
     }
   }
 
+  /**
+   * 清空画布
+   */
   clear() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
+  /**
+   * 添加绘制项
+   * @param Items 绘制项数组
+   */
   addItem<T extends CanvasItem>(Items: Array<T | T[]>) {
-    this.items = Items
+    this.items = Items;
   }
 
+  /**
+   * 获取指定位置的绘制项
+   * @param col 列索引
+   * @param row 行索引
+   * @returns 绘制项
+   */
   getItem<T extends CanvasItem>(col: number, row: number): T | undefined {
     if (this.items) {
       if (!Array.isArray(this.items[0])) {
-        // this.items = [this.items] as Array<CanvasItem[]>;
-        // row = col
-        // col = 0;
         return this.items[col] as T;
       } else {
-        return (this.items[col] as T[])[row]
+        return (this.items[col] as T[])[row];
       }
     }
   }
 }
-
 
 export class Particle extends canvasInfo {
   x: number;
@@ -112,21 +111,19 @@ export class Particle extends canvasInfo {
   dy: number;
   dr: number;
   isAni: boolean;
+  _originAttr: Particle | null;
 
   constructor({
     x,
     y,
-    radius = getRandom(1 * devicePixelRatio, 3 * devicePixelRatio), // 默认值
-    color = "black", // 默认值
-    dx = 0, // 默认值
-    dy = 0, // 默认值
-    dr = 0, // 默认值
-    isAni = false
-  }: ParticleNumAttr & {
-    color: string
-    isAni?: boolean
-  }) {
-    super()
+    radius = getRandom(1 * devicePixelRatio, 3 * devicePixelRatio),
+    color = "black",
+    dx = 0,
+    dy = 0,
+    dr = 0,
+    isAni = false,
+  }: ParticleNumAttr & { color: string; isAni?: boolean }) {
+    super();
     this.x = x ?? Math.random() * this.canvas.width;
     this.y = y ?? Math.random() * this.canvas.height;
     this.radius = radius;
@@ -135,8 +132,17 @@ export class Particle extends canvasInfo {
     this.dy = dy;
     this.dr = dr;
     this.isAni = isAni;
+    this._originAttr = null;
   }
 
+  private getOriginAttr() {
+    this._originAttr = this;
+    this.getOriginAttr = () => null;
+  }
+
+  /**
+   * 绘制粒子
+   */
   draw() {
     this.ctx.beginPath();
     this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -145,13 +151,18 @@ export class Particle extends canvasInfo {
     this.ctx.closePath();
   }
 
+  /**
+   * 移动粒子到指定位置
+   * @param x1 目标x坐标
+   * @param y1 目标y坐标
+   * @param duration 持续时间
+   */
   moveTo(x1: number, y1: number, duration: number = 500) {
-    const
-      x0 = this.x,
-      y0 = this.y,
-      dx = (x1 - x0) / duration,
-      dy = (y1 - y0) / duration,
-      t0 = Date.now();
+    const x0 = this.x;
+    const y0 = this.y;
+    const dx = (x1 - x0) / duration;
+    const dy = (y1 - y0) / duration;
+    const t0 = Date.now();
 
     const _move = () => {
       const dt = Date.now() - t0;
@@ -163,82 +174,67 @@ export class Particle extends canvasInfo {
         return;
       }
       requestAnimationFrame(_move);
-    }
+    };
     _move();
-    //   // Check for collision with canvas boundaries
-    //   if (this.x + this.radius > this.canvas.width || this.x - this.radius < 0) {
-    //     this.dx = -this.dx;
-    //   }
-    //   if (this.y + this.radius > this.canvas.height || this.y - this.radius < 0) {
-    //     this.dy = -this.dy;
-    //   }
   }
 
+  /**
+   * 动画效果
+   * @param options 动画选项
+   * @param callback 动画完成后的回调
+   */
   animate(
-    options: itemOrArray<SetNumAttrOption<ParticleNumAttr>>,
-    callback?: (curObj: Particle) => void,
+    options: itemOrArray<SetNumAttrOption<ParticleNumAttr<AniNumOpt>>>,
+    callback?: (curObj: Particle) => void
   ) {
-    const _pna: ParticleNumAttr = {
-      x: 0,
-      y: 0,
-      radius: 0,
-      dx: 0,
-      dy: 0,
-      dr: 0,
-    }
-    options = toArray(options)
+    this.getOriginAttr();
+    if (this.isAni) return;
 
-    const _setAttr = (
-      _option: {
-        key: keyof ParticleNumAttr
-        value: number
-        duration: number
-        // dT: number
-      }
-    ) => {
-      const
-        startAttr = this[_option.key],
-        endAttr = _option.value
-      const
-        t0 = Date.now(),
-        dT = (endAttr - startAttr) / _option.duration
+    this.isAni = true;
+    options = toArray(options);
+
+    const _setAttr = (key: keyof ParticleNumAttr, endAttr: number, duration: number) => {
+      const startAttr = this[key];
+      const t0 = Date.now();
+      const dT = (endAttr - startAttr) / duration;
 
       const _process = () => {
         const dt = Date.now() - t0;
-        this[_option.key] = startAttr + dT * dt;
-        if (dt >= _option.duration) {
-          this[_option.key] = endAttr;
-          this.isAni = false
-          callback && callback(this)
+        this[key] = startAttr + dT * dt;
+        if (dt >= duration) {
+          this[key] = endAttr;
+          this.isAni = false;
+          callback?.(this);
           return;
         }
         requestAnimationFrame(_process);
-      }
+      };
       _process();
-    }
+    };
 
-    for (const option of options) {
-      let _key, _value
-      for (const key in option) {
-        if (key in _pna) {
-          _key = key as keyof ParticleNumAttr
-          _value = option[_key]
+    const _getEndAttr = (key: keyof ParticleNumAttr) => {
+      if (typeof options[0][key] === "number") {
+        return options[0][key] as number;
+      } else if (typeof options[0][key] === "string") {
+        const _val = options[0][key] as string;
+        if (_val.startsWith("+")) {
+          return this._originAttr![key] + parseFloat(_val.slice(1));
+        } else if (_val.startsWith("-")) {
+          return this._originAttr![key] - parseFloat(_val.slice(1));
         }
       }
-      // console.log(this.isAni)
-      if (!this.isAni) {
-        this.isAni = true
-        const _startVal = this[_key!]
-        _setAttr({
-          key: _key!,
-          value: _value!,
-          duration: option.duration,
-          // dT: option.dT,
-        })
-      }
-
+      return 0;
     }
 
 
+    for (const option of options) {
+      for (const key in option) {
+        if (key in this) {
+          const _key = key as keyof ParticleNumAttr;
+          const _endVal = _getEndAttr(_key)
+          _setAttr(_key, _endVal, option.duration);
+        }
+      }
+    }
   }
 }

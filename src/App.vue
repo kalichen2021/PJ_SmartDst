@@ -7,99 +7,91 @@
 
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { onMounted, watch, ref } from 'vue';
+import { onMounted, watch, ref, onUnmounted } from 'vue';
 import { useElementStore } from '@/stores/counter';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
-import type { CanvasItem } from './assets/js/type'
-import { getCssVal, getRandom } from "./assets/js/utils"
+import type { AniNumOpt, CanvasItem } from './assets/js/type'
+import { getCssVal, getRandom, throttle } from "./assets/js/utils"
 
 const elStore = useElementStore()
 const particles: Array<Particle>[] = []
 const testVal = ref(0)
 
-const _initRadius = (particles: Array<Particle[]>) => {
-  particles.forEach((row) => {
-    row.forEach((p) => {
-      p.animate({
-        radius: 10,
-        duration: 200
-      })
-    })
-  })
+
+const _getD = (x0: number, y0: number, x1: number, y1: number) => {
+  return Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2))
 }
+
+const initializeParticles = (rows: number, cols: number, intervalX: number, intervalY: number) => {
+  const newParticles: Array<Particle[]> = [];
+  for (let col = 1; col <= cols; col++) {
+    const rowParticles: Particle[] = [];
+    for (let row = 1; row <= rows; row++) {
+      const p = new Particle({
+        x: row * intervalX,
+        y: col * intervalY,
+        color: "rgba(0, 163, 123, 0.546)",
+        radius: 10,
+      });
+      rowParticles.push(p);
+    }
+    newParticles.push(rowParticles);
+  }
+  return newParticles;
+};
+
+const animateParticle = (p: Particle, radiusChange: AniNumOpt, duration: number, callbackDuration: number) => {
+  p.animate(
+    {
+      radius: radiusChange,
+      duration,
+    },
+    (_this) => {
+      _this.animate({
+        radius: 10,
+        duration: callbackDuration,
+      });
+    }
+  );
+};
+
 
 watch(
   () => elStore.intervalX,
   (c, p) => {
     const backMedia = new canvasOperator();
     backMedia.init();
-    const
-      intervalX = elStore.intervalX,
-      intervalY = elStore.intervalY;
-    const rows = Math.floor(backMedia.canvas.width / intervalX)
-    const cols = Math.floor(backMedia.canvas.height / intervalY)
-    console.log({ rows, cols })
-    for (let col = 1; col <= cols; col += 1) {
-      let _rowParticles = []
-      for (let row = 1; row <= rows; row += 1) {
-        const p = new Particle({
-          x: row * intervalX,
-          y: col * intervalY,
-          color: "rgba(0, 163, 123, 0.546)",
-          radius: 10,
-        })
-        _rowParticles.push(p)
-      }
-      particles.push(_rowParticles)
-    }
-    // console.log(particles)
-    backMedia.addItem<Particle>(particles)
-    // backMedia.addItem<Particle>([new Particle({
-    //   x: intervalX * 5,
-    //   y: intervalY * 5,
-    //   color: "rgba(0, 163, 123, 0.546)",
-    //   radius: 10,
-    // })])
 
-    backMedia.process()
-    document.addEventListener("mousemove", (e) => {
-      const indexX = Math.floor(e.clientX / intervalX + .5)
-      const indexY = Math.floor(e.clientY / intervalY + .5)
-      if (indexX <= rows && indexY <= cols && indexX > 0 && indexY > 0) {
-        backMedia.getItem<Particle>(indexY - 1, indexX - 1)!.animate({
-          radius: 20,
-          duration: 100
-        }, (_this) => {
-          _this.animate({
-            radius: 10,
-            duration: 500
-          })
-        })
+    const rows = Math.floor(backMedia.canvas.width / elStore.intervalX);
+    const cols = Math.floor(backMedia.canvas.height / elStore.intervalY);
 
-      }
-      // if (indexX == 5 && indexY == 5) {
-      //   // _initRadius(backMedia.items as Particle[][])
-      //   backMedia.getItem<Particle>(0, 0)!.animate({
-      //     radius: 20,
-      //     duration: 500
-      //   }, (_this) => {
-      //     _this.animate({
-      //       radius: 10,
-      //       duration: 100
-      //     })
-      //   })
-
-      // }
-    })
+    particles.push(...initializeParticles(rows, cols, elStore.intervalX, elStore.intervalY));
+    backMedia.addItem<Particle>(particles);
+    backMedia.process();
   }
-)
+);
 
 onMounted(() => {
+  const handleMouseMove = (e: MouseEvent) => {
+    for (const row of particles) {
+      for (const p of row) {
+        if (_getD(p.x, p.y, e.clientX, e.clientY) <= 30) {
+          animateParticle(p, "+10", 100, 500);
+          return;
+        }
+      }
+    }
+  };
 
+  const throttledMouseMove = throttle(handleMouseMove, 0);
 
+  document.addEventListener("mousemove", handleMouseMove);
 
-})
+  onUnmounted(() => {
+    document.removeEventListener("mousemove", throttledMouseMove);
+  });
+});
 </script>
 
 
