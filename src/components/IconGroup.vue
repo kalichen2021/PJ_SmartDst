@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
-import { useElementStore } from '@/stores/counter';
+import { useCounterStore, useElementStore } from '@/stores/counter';
 import { MoveHandler, ScaleHandler } from './utils/IconGroup.tsx';
 import type { TP_entryConf } from '@/assets/js/type'
 
@@ -31,6 +31,7 @@ import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
 import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
+import { UseUseOperaStore } from '@/stores/UserOpera.ts';
 
 const icons = ref([
   { id: 1, name: 'home' },
@@ -58,8 +59,9 @@ const icons = ref([
 
 ]);
 
-const elStore = useElementStore()
-const { setIntervalXY } = elStore
+const elementStore = useElementStore()
+const userOperaStore = UseUseOperaStore()
+const { setIntervalXY } = elementStore
 
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
@@ -71,9 +73,6 @@ const entriesConf = ref<[TP_entryConf]>()
 // tips: InstanceType 实例类型
 const elCtnMenu = ref<InstanceType<typeof CtnMenu> | null>(null)
 
-const isRightClicked = ref(false)
-
-let elIconMoreClick: any
 
 onMounted(() => {
   // 文件图标组是否为编辑状态
@@ -104,7 +103,6 @@ onMounted(() => {
       const GrpCtnControllerList = Array.from(GrpCtnController) as HTMLElement[]
       elGrabBar.value!.draggable = true;
       GrpCtnControllerList.forEach((el) => el!.style.display = "block")
-
       // 点击空白位置，隐藏控件
       clickSwhToHide(GrpCtnControllerList, [elCtnMenu.value!.dom!, elIconGrp.value!])
     }
@@ -114,15 +112,32 @@ onMounted(() => {
   const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
   const interval = { x: iconSize.width, y: iconSize.height }
   setIntervalXY(interval)
-  const _tranStyle = "all .5s"
+  const _tranStyle = "all .3s"
   const mvHder = new MoveHandler(
     elIconGrp.value!,
     interval,
     // 添加过渡
     // _start 回调
-    () => elIconGrp.value!.style.transition = _tranStyle,
+    () => {
+      // console.log("start")
+      elIconGrp.value!.style.transition = _tranStyle
+      userOperaStore.ctrlState = "move"
+    },
+    () => {
+      userOperaStore.iconGroupPosition = [
+        mvHder.curPosition[0],
+        mvHder.curPosition[1]
+      ]
+    },
     // _stop 回调
-    () => elIconGrp.value!.style.removeProperty('transition')
+    () => {
+      elIconGrp.value!.style.removeProperty('transition')
+      userOperaStore.ctrlState = null
+      // userOperaStore.iconGroupPosition = [
+      //   mvHder.curPosition[0],
+      //   mvHder.curPosition[1]
+      // ]
+    }
   );
   const sclHder = new ScaleHandler(
     elGridCtn.value!,
@@ -133,12 +148,20 @@ onMounted(() => {
       elIconGrp.value!.style.transition = _tranStyle
       elIconGrpCtn.value!.style.transition = _tranStyle
       elGridCtn.value!.style.transition = _tranStyle
+      userOperaStore.ctrlState = "scale"
+    },
+    () => {
+      userOperaStore.icnoGroupSize = [
+        sclHder.curSize[0],
+        sclHder.curSize[1]
+      ]
     },
     // _stop 回调
     () => {
       elIconGrp.value!.style.removeProperty('transition')
       elIconGrpCtn.value!.style.removeProperty('transition')
       elGridCtn.value!.style.removeProperty('transition')
+      userOperaStore.ctrlState = null
     }
   );
 
@@ -206,10 +229,19 @@ onMounted(() => {
   height: 100%;
 }
 
+.border-container .controller:hover {
+  cursor: grab;
+}
+
 .border-container .bar {
+  transition: all .3s ease;
   top: calc(var(--ctn-padding) * -1);
   width: 5rem;
   height: 1rem;
+}
+
+.border-container .bar:hover {
+  scale: 1.2;
 }
 
 .border-container .scaler {

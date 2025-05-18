@@ -11,10 +11,13 @@ import { onMounted, watch, ref, onUnmounted } from 'vue';
 import { useElementStore } from '@/stores/counter';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
-import type { AniNumOpt, CanvasItem } from './assets/js/type'
-import { getCssVal, getRandom, throttle } from "./assets/js/utils"
+import type { AniNumOpt, CanvasItem, Polygon, Rect } from './assets/js/type'
+import { getCssVal, getD, getRandom, isInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
+import { UseUseOperaStore } from './stores/UserOpera';
 
-const elStore = useElementStore()
+const elementStore = useElementStore()
+const userOperaStore = UseUseOperaStore()
+
 const particles: Array<Particle>[] = []
 const testVal = ref(0)
 
@@ -47,25 +50,25 @@ const animateParticle = (p: Particle, radiusChange: AniNumOpt, duration: number,
       radius: radiusChange,
       duration,
     },
-    (_this) => {
-      _this.animate({
-        radius: 10,
-        duration: callbackDuration,
-      });
-    }
+    // (_this) => {
+    //   _this.animate({
+    //     radius: 10,
+    //     duration: callbackDuration,
+    //   });
+    // }
   );
 };
 
 
 watch(
-  () => elStore.intervalX,
+  () => elementStore.intervalX,
   (c, p) => {
     const backMedia = new canvasOperator();
     backMedia.init();
 
-    const rows = Math.floor(backMedia.canvas.width / elStore.intervalX);
-    const cols = Math.floor(backMedia.canvas.height / elStore.intervalY);
-    console.log(elStore.intervalX)
+    const rows = Math.floor(backMedia.canvas.width / elementStore.intervalX);
+    const cols = Math.floor(backMedia.canvas.height / elementStore.intervalY);
+    console.log(elementStore.intervalX)
 
     particles.push(...initializeParticles(rows, cols, 57.59, 59.19));
     backMedia.addItem<Particle>(particles);
@@ -75,11 +78,27 @@ watch(
 
 onMounted(() => {
   const handleMouseMove = (e: MouseEvent) => {
+    if (userOperaStore.ctrlState !== "move") return;
+    const squere: Polygon = rectToPolygon({
+      x: userOperaStore.iconGroupPosition[0],
+      y: userOperaStore.iconGroupPosition[1],
+      width: elementStore.intervalX * userOperaStore.icnoGroupSize[0] * 1.1,
+      height: elementStore.intervalY * userOperaStore.icnoGroupSize[1] * 1.1
+    })
     for (const row of particles) {
       for (const p of row) {
-        if (_getD(p.x, p.y, e.clientX, e.clientY) <= 30) {
-          animateParticle(p, "+10", 100, 500);
-          return;
+        if (
+          isInPolygon([p.x, p.y], squere)
+        ) {
+          p.animate({
+            radius: 20,
+            duration: 100
+          })
+        } else {
+          p.animate({
+            radius: 8,
+            duration: 400
+          })
         }
       }
     }

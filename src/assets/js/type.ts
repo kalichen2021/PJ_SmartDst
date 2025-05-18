@@ -48,4 +48,21 @@ export interface CanvasItem {
   draw: () => void
 }
 
-export type isKeyOf<T, K> = K extends keyof T ? true : false;
+// export type isKeyOf<T, K> = K extends keyof T ? true : false;
+
+// Geometry
+export type Point = [number, number]
+
+export type Circle = {
+  center: Point
+  radius: number
+}
+
+export type Polygon = [Point, Point, ...Point[]]
+
+export type Rect = {
+  x: number
+  y: number
+  width: number
+  height: number
+}

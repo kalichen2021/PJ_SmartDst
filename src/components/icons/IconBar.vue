@@ -33,9 +33,4 @@ svg {
 
   transition: all .3s ease;
 }
-
-svg:hover {
-  cursor: grab;
-  transform: scale(1.1);
-}
 </style>

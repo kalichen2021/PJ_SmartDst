@@ -1,3 +1,4 @@
+import type { Point } from '@/assets/js/type'
 import { h, render, type Ref } from 'vue'
 
 export function rightClickHandler(
@@ -41,10 +42,13 @@ export class DragHandler {
   apply(e: MouseEvent) {
     // 绑定事件
     this._start(e)
+    this.targetEl.style.userSelect = 'none'
   }
 
   _start(e: MouseEvent) {
     e.preventDefault()
+    // 设置鼠标形状
+    document.body.style.cursor = 'grabbing'
     this.isDragging = true
     this.startX = e.clientX
     this.startY = e.clientY
@@ -78,9 +82,11 @@ export class DragHandler {
 
   _stop(e: MouseEvent) {
     if (!this.isDragging) return
-
     e.preventDefault()
     this.isDragging = false
+    // 设置鼠标形状
+    document.body.style.cursor = ''
+    this.targetEl.style.userSelect = 'auto'
 
     // 动态移除事件
     document.removeEventListener('mousemove', this._process.bind(this))
@@ -98,18 +104,21 @@ export class DragHandler {
 export class MagneticTransitionHandler extends DragHandler {
   interval: { x: number; y: number }
   _startFnCallback: () => void
+  _processFnCallback: () => void
   _stopFnCallback: () => void
 
   constructor(
     el: HTMLElement,
     interval?: { x: number; y: number },
     _startFnCallback?: () => void,
-    _stoptFnCallback?: () => void,
+    _processFnCallback?: () => void,
+    _stopFnCallback?: () => void,
   ) {
     super(el)
     this.interval = interval ?? { x: 0, y: 0 }
     this._startFnCallback = _startFnCallback ?? (() => {})
-    this._stopFnCallback = _stoptFnCallback ?? (() => {})
+    this._processFnCallback = _processFnCallback ?? (() => {})
+    this._stopFnCallback = _stopFnCallback ?? (() => {})
   }
 
   getFixedSize(_x: number, _y: number): { x: number; y: number } {
@@ -131,6 +140,7 @@ export class MagneticTransitionHandler extends DragHandler {
 }
 
 export class MoveHandler extends MagneticTransitionHandler {
+  curPosition: Point
   constructor(
     el: HTMLElement,
     interval?: {
@@ -138,9 +148,11 @@ export class MoveHandler extends MagneticTransitionHandler {
       y: number
     },
     _startFnCallback?: () => void,
-    _stoptFnCallback?: () => void,
+    _processFnCallback?: () => void,
+    _stopFnCallback?: () => void,
   ) {
-    super(el, interval, _startFnCallback, _stoptFnCallback)
+    super(el, interval, _startFnCallback, _processFnCallback, _stopFnCallback)
+    this.curPosition = [0, 0]
   }
 
   private get targetElAxis() {
@@ -164,23 +176,28 @@ export class MoveHandler extends MagneticTransitionHandler {
     // this.targetEl.style.top = `${this.curRelY}px`
     // 使用 transform 替代 left 和 top
     const { x, y } = this.getFixedSize(this.curRelX, this.curRelY)
+    this.curPosition = [x, y]
     this.targetEl.style.transform = `translate(${x}px, ${y}px)`
+    this._processFnCallback()
   }
 }
 
 export class ScaleHandler extends MagneticTransitionHandler {
   elStartWidth: number
   elStartHeight: number
+  curSize: Point
 
   constructor(
     el: HTMLElement,
     interval: { x: number; y: number },
-    _startFnCallback: () => void,
-    _stoptFnCallback: () => void,
+    _startFnCallback?: () => void,
+    _processFnCallback?: () => void,
+    _stopFnCallback?: () => void,
   ) {
-    super(el, interval, _startFnCallback, _stoptFnCallback)
+    super(el, interval, _startFnCallback, _processFnCallback, _stopFnCallback)
     this.elStartWidth = this.targetEl.offsetWidth
     this.elStartHeight = this.targetEl.offsetHeight
+    this.curSize = [3, 3]
   }
 
   _processInnerFunc() {
@@ -188,8 +205,11 @@ export class ScaleHandler extends MagneticTransitionHandler {
       this.elStartWidth + this.curRelX,
       this.elStartHeight + this.curRelY,
     )
+    this.curSize = [Math.floor(x / this.interval.x), Math.round(y / this.interval.y)]
     this.targetEl.style.width = `${x + 0.001}px`
     this.targetEl.style.height = `${y + 0.001}px`
+
+    this._processFnCallback()
     // console.log(this.scaleAxis.dx)
   }
 }
