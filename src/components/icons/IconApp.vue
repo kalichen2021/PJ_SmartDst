@@ -7,20 +7,22 @@
 
 <script setup lang="ts">
 
+
 const props = defineProps({
   name: {
     type: String,
     required: true,
   },
 });
+
 </script>
 
 <style scoped>
 .icon-item {
-  max-width: var(--icon-size);
-  max-height: var(--icon-size);
   padding: .2rem;
-  margin: .2rem;
+  width: 100%;
+  height: 100%;
+
   object-fit: cover;
   transition: all 0.3s ease;
 
@@ -33,6 +35,7 @@ const props = defineProps({
   /* border: 1px solid #f5f5f5; */
 
   overflow: hidden;
+  transform-origin: center;
 }
 
 .icon-item:hover {
@@ -50,7 +53,7 @@ img {
 
 span {
   font-size: 0.8rem;
-  color: var(color-text);
+  color: var(--color-text);
   text-align: center;
   /* margin-top: 0rem; */
   /* Add any additional styles for the text here */

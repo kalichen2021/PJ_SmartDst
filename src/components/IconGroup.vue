@@ -2,7 +2,7 @@
   <div class="icon-group" ref="elIconGrp">
     <div class="border-container" ref="elIconGrpCtn">
       <div class="container" ref="elGridCtn">
-        <div v-for="icon in icons" :key="icon.id" draggable="false" ref="elIconWrap">
+        <div v-for="icon in icons" :key="icon.id" draggable="false" ref="elIconWrap" class="icon-item-wrap">
           <icon-app :name="icon.name" />
         </div>
       </div>
@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
 import { useElementStore } from '@/stores/counter';
-import { rightClickHandler, moveHandler, scaleHandler } from './utils/IconGroup.tsx';
+import { MoveHandler, ScaleHandler } from './utils/IconGroup.tsx';
 import type { TP_entryConf } from '@/assets/js/type'
 
 import IconApp from './icons/IconApp.vue';
@@ -30,7 +30,7 @@ import IconMore from './icons/IconMore.vue';
 import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
-import { clickSwhToHide, isInDom } from '@/assets/js/utils';
+import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
 
 const icons = ref([
   { id: 1, name: 'home' },
@@ -54,7 +54,7 @@ const icons = ref([
   { id: 7, name: 'star' },
   { id: 8, name: 'camera' },
   { id: 9, name: 'video' },
-  { id: 10, name: 'music' },
+  // { id: 10, name: 'music' },
 
 ]);
 
@@ -80,7 +80,7 @@ onMounted(() => {
   const isElIconGrpCtnConf = ref<Boolean>(false)
   // 获取控制器元素
   const GrpCtnController =
-    elIconGrpCtn.value!.querySelectorAll(".controller") as NodeListOf<HTMLElement>;
+    elIconGrpCtn.value!.querySelectorAll(".controller");
 
   /**
    * 编辑文件图标组步骤说明；
@@ -101,31 +101,38 @@ onMounted(() => {
     // 点击进入控件设置
     clickHandler: () => {
       // 允许拖动控件工作
+      const GrpCtnControllerList = Array.from(GrpCtnController) as HTMLElement[]
       elGrabBar.value!.draggable = true;
-      [...GrpCtnController].forEach((el) => el!.style.display = "block")
+      GrpCtnControllerList.forEach((el) => el!.style.display = "block")
 
       // 点击空白位置，隐藏控件
-      clickSwhToHide([...GrpCtnController], [elCtnMenu.value!.dom!, elIconGrp.value!])
+      clickSwhToHide(GrpCtnControllerList, [elCtnMenu.value!.dom!, elIconGrp.value!])
     }
   }]
 
   // 控件事件
   const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
-  setIntervalXY(iconSize.width, iconSize.height)
-  const mvHder = new moveHandler(elIconGrp.value!);
-  const sclHder = new scaleHandler(
+  const interval = { x: iconSize.width, y: iconSize.height }
+  setIntervalXY(interval)
+  const _tranStyle = "all .5s"
+  const mvHder = new MoveHandler(
+    elIconGrp.value!,
+    interval,
+    // 添加过渡
+    // _start 回调
+    () => elIconGrp.value!.style.transition = _tranStyle,
+    // _stop 回调
+    () => elIconGrp.value!.style.removeProperty('transition')
+  );
+  const sclHder = new ScaleHandler(
     elGridCtn.value!,
-    {
-      width: iconSize.width,
-      height: iconSize.height
-    },
+    interval,
     // 添加过渡
     // _start 回调
     () => {
-      const _style = "all .5s"
-      elIconGrp.value!.style.transition = _style
-      elIconGrpCtn.value!.style.transition = _style
-      elGridCtn.value!.style.transition = _style
+      elIconGrp.value!.style.transition = _tranStyle
+      elIconGrpCtn.value!.style.transition = _tranStyle
+      elGridCtn.value!.style.transition = _tranStyle
     },
     // _stop 回调
     () => {
@@ -147,13 +154,14 @@ onMounted(() => {
 @include move-ani(0, -.5rem);
 
 // tips: 不同单位变量换算用calc()
-$grid-box-size-w: calc($icon-w * 3);
-$grid-box-size-h: calc($icon-h * 3);
-$grp-padding-w: calc($icon-w * 0.5 - $ctn-padding);
-$grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
+// :root {}
 
 
 .icon-group {
+  --grid-box-size-w: calc(var(--icon-w) * 3);
+  --grid-box-size-h: calc(var(--icon-h) * 3);
+  --grp-padding-w: calc(var(--icon-w) * 0.5 - var(--ctn-padding));
+  --grp-padding-h: calc(var(--icon-h) * 0.5 - var(--ctn-padding));
   // 节省重绘开销
   position: fixed;
   top: 0;
@@ -164,7 +172,7 @@ $grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
   width: fit-content;
   height: fit-content;
   // tips: padding: <padding-col> <>padding-row>
-  padding: #{$grp-padding-h} #{$grp-padding-w};
+  padding: var(--grp-padding-h) var(--grp-padding-w);
 
   // user-select: none;
   // -webkit-user-drag: none;
@@ -178,7 +186,7 @@ $grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
   position: relative;
   outline: 1px solid #ff0000;
   border-radius: 1rem;
-  padding: $ctn-padding;
+  padding: var(--ctn-padding);
   @include display-c;
   // width: calc(var(--icon-size)*1/4 + var(--grid-box-size-w));
   // height: calc(var(--icon-size)*1/3 + var(--grid-box-size-h));
@@ -199,7 +207,7 @@ $grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
 }
 
 .border-container .bar {
-  top: $ctn-padding * -1;
+  top: calc(var(--ctn-padding) * -1);
   width: 5rem;
   height: 1rem;
 }
@@ -220,22 +228,18 @@ $grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
 
 .container {
   // border: red 1px solid;
-  // 加上内边距
-  --grid-col-size: calc(var(--icon-size) - var(--ctn-padding)*2);
-  // 减去应用名称文本高度
-  --grid-row-size: calc(var(--icon-size) - .15rem - var(--ctn-padding)*2);
   display: grid;
   /* 3*3布局，每个格子最大为32px, 超出3行scroll*/
 
   /* gap: 10px; */
-  grid-template-columns: repeat(auto-fit, minmax(#{$icon-w}, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--icon-w), 1fr));
   // 减去文本高度
-  grid-template-rows: repeat(auto-fit, minmax(#{$icon-h}, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(var(--icon-h), 1fr));
 
   overflow-y: auto;
   overflow-x: hidden;
-  max-width: #{$grid-box-size-w};
-  max-height: #{$grid-box-size-h};
+  max-width: var(--grid-box-size-w);
+  max-height: var(--grid-box-size-h);
 
   // // 改变容器大小
   // resize: both;
@@ -265,11 +269,18 @@ $grp-padding-h: calc($icon-h * 0.5 - $ctn-padding);
   }
 }
 
+.icon-item-wrap {
+  width: var(--icon-w);
+  height: var(--icon-h);
+  padding: .1rem;
+  // margin: var(--icon-app-margin);
+}
+
 span {
   width: 100%;
   height: 0;
   font-size: 0.9rem;
-  color: var(color-text);
+  color: var(--color-text);
   text-align: center;
   /* margin-top: 0rem; */
   /* Add any additional styles for the text here */

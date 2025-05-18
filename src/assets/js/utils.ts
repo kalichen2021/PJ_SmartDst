@@ -12,6 +12,14 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
   return [i];
 }
 
+
+export const getD = <X extends number[]>(axis0: X, axis1: X & { length: X["length"] }) => {
+  return Math.sqrt(
+    axis0.reduce((sum, val, i) => sum + Math.pow(axis1[i] - val, 2), 0)
+  );
+}
+
+
 export const throttle = (func: Function, limit: number) => {
   let inThrottle: boolean;
   return function (this: any, ...args: any[]) {
@@ -22,9 +30,6 @@ export const throttle = (func: Function, limit: number) => {
     }
   };
 };
-// export const isKeyOfInterface = <T>(key: string | number | symbol): key is keyof T => {
-//   return true;
-// }
 
 
 
@@ -45,6 +50,28 @@ export const isInDom = (el: HTMLElement, parent: HTMLElement): boolean => {
     return false;
   }
   return el.parentElement !== null && isInDom(el.parentElement, parent);
+}
+
+// 获得带有margin的元素位置
+// 参考：https://stackoverflow.com/questions/19595189/getboundingclientrect-with-margin
+export const getBoundingRectWithMargin = (element: HTMLElement) => {
+  const rect = element.getBoundingClientRect();
+  const style = window.getComputedStyle(element);
+
+  const marginTop = parseFloat(style.marginTop) || 0;
+  const marginBottom = parseFloat(style.marginBottom) || 0;
+  const marginLeft = parseFloat(style.marginLeft) || 0;
+  const marginRight = parseFloat(style.marginRight) || 0;
+  console.log({ rect, marginTop, marginBottom, marginLeft, marginRight });
+
+  return {
+    top: rect.top - marginTop,
+    bottom: rect.bottom + marginBottom,
+    left: rect.left - marginLeft,
+    right: rect.right + marginRight,
+    width: rect.width + marginLeft + marginRight,
+    height: rect.height + marginTop + marginBottom,
+  };
 }
 
 

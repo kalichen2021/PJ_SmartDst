@@ -56,9 +56,10 @@
   --icon-size: 64px;
   --app-text-size: 0.1rem;
   --ctn-padding: 0.25rem;
+  --icon-app-margin: 0.2rem;
 
-  --icon-w: var(--icon-size);
-  --icon-h: calc(var(--icon-size) + var(--app-text-size));
+  --icon-w: calc(var(--icon-size) - var(--icon-app-margin) * 2);
+  --icon-h: calc(var(--icon-size) + var(--app-text-size) - var(--icon-app-margin) * 2);
 
   --interval-x: var(--icon-w);
   --interval-y: var(--icon-size) + 0.1 * var(--root-font-size);

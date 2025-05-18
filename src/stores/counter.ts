@@ -16,9 +16,9 @@ export const useElementStore = defineStore('element', () => {
     intervalX = ref(0),
     intervalY = ref(0);
 
-  const setIntervalXY = (x: number, y: number) => {
-    intervalX.value = x
-    intervalY.value = y
+  const setIntervalXY = (_interval: { x: number, y: number }) => {
+    intervalX.value = _interval.x
+    intervalY.value = _interval.y
   }
 
   return { intervalX, intervalY, setIntervalXY }

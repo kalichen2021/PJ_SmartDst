@@ -1,7 +1,5 @@
 import { h, render, type Ref } from 'vue'
 
-export function hoverHandler() {}
-
 export function rightClickHandler(
   el: HTMLElement,
   isClicked: Ref<Boolean>,
@@ -16,20 +14,20 @@ export function rightClickHandler(
   })
 }
 
-export class dragHandler {
+export class DragHandler {
   /** 操作对象 */
   targetEl: HTMLElement
 
-  /** 鼠标的初始x坐标 */
+  /** 鼠标初始x坐标 */
   startX: number = 0
 
-  /** 鼠标的初始y坐标 */
+  /** 鼠标初始y坐标 */
   startY: number = 0
 
-  /** 鼠标的当前相对x坐标 */
+  /** 鼠标当前相对x坐标 */
   curRelX: number = 0
 
-  /** 鼠标的当前相对y坐标 */
+  /** 鼠标当前相对y坐标 */
   curRelY: number = 0
 
   isDragging: boolean = false
@@ -97,22 +95,52 @@ export class dragHandler {
   }
 }
 
-export class moveHandler extends dragHandler {
-  constructor(el: HTMLElement) {
+export class MagneticTransitionHandler extends DragHandler {
+  interval: { x: number; y: number }
+  _startFnCallback: () => void
+  _stopFnCallback: () => void
+
+  constructor(
+    el: HTMLElement,
+    interval?: { x: number; y: number },
+    _startFnCallback?: () => void,
+    _stoptFnCallback?: () => void,
+  ) {
     super(el)
-  }
-  _start(e: MouseEvent): void {
-    super._start(e)
-    this.startX -= this.targetElAxis.x0
-    this.startY -= this.targetElAxis.y0
+    this.interval = interval ?? { x: 0, y: 0 }
+    this._startFnCallback = _startFnCallback ?? (() => {})
+    this._stopFnCallback = _stoptFnCallback ?? (() => {})
   }
 
-  _processInnerFunc(): void {
-    // this.targetEl.style.left = `${this.curRelX}px`
-    // this.targetEl.style.top = `${this.curRelY}px`
-    // 使用 transform 替代 left 和 top
-    console.log(this.curRelX)
-    this.targetEl.style.transform = `translate(${this.curRelX}px, ${this.curRelY}px)`
+  getFixedSize(_x: number, _y: number): { x: number; y: number } {
+    return {
+      x: Math.round(_x / this.interval.x) * this.interval.x,
+      y: Math.round(_y / this.interval.y) * this.interval.y,
+    }
+  }
+
+  _start(e: MouseEvent): void {
+    super._start(e)
+    this._startFnCallback()
+  }
+
+  _stop(e: MouseEvent): void {
+    super._stop(e)
+    this._stopFnCallback()
+  }
+}
+
+export class MoveHandler extends MagneticTransitionHandler {
+  constructor(
+    el: HTMLElement,
+    interval?: {
+      x: number
+      y: number
+    },
+    _startFnCallback?: () => void,
+    _stoptFnCallback?: () => void,
+  ) {
+    super(el, interval, _startFnCallback, _stoptFnCallback)
   }
 
   private get targetElAxis() {
@@ -125,62 +153,43 @@ export class moveHandler extends dragHandler {
 
     return { x0, y0 }
   }
+  _start(e: MouseEvent): void {
+    super._start(e)
+    this.startX -= this.targetElAxis.x0
+    this.startY -= this.targetElAxis.y0
+  }
 
-  test() {
-    console.log(this)
+  _processInnerFunc(): void {
+    // this.targetEl.style.left = `${this.curRelX}px`
+    // this.targetEl.style.top = `${this.curRelY}px`
+    // 使用 transform 替代 left 和 top
+    const { x, y } = this.getFixedSize(this.curRelX, this.curRelY)
+    this.targetEl.style.transform = `translate(${x}px, ${y}px)`
   }
 }
 
-export class scaleHandler extends dragHandler {
+export class ScaleHandler extends MagneticTransitionHandler {
   elStartWidth: number
   elStartHeight: number
-  unitSize: { width: number; height: number }
-  _startFnCallback: () => void
-  _stopFnCallback: () => void
 
   constructor(
     el: HTMLElement,
-    unitSize: { width: number; height: number },
+    interval: { x: number; y: number },
     _startFnCallback: () => void,
     _stoptFnCallback: () => void,
   ) {
-    super(el)
+    super(el, interval, _startFnCallback, _stoptFnCallback)
     this.elStartWidth = this.targetEl.offsetWidth
     this.elStartHeight = this.targetEl.offsetHeight
-    this.unitSize = unitSize
-    this._startFnCallback = _startFnCallback
-    this._stopFnCallback = _stoptFnCallback
-  }
-  private getFixedSize(curWidth: number, curHeight: number) {
-    // mutiple width and height, 单位长度
-    const unitWidth = this.unitSize.width
-    const unitHeight = this.unitSize.height
-    const mult_w = Math.floor(curWidth / unitWidth) * unitWidth || unitWidth
-    const mult_h = Math.floor(curHeight / unitHeight) * unitHeight || unitHeight
-    return { mult_w, mult_h }
-  }
-
-  _start(e: MouseEvent): void {
-    super._start(e)
-    this._startFnCallback()
   }
 
   _processInnerFunc() {
-    const fixedSize = this.getFixedSize(
+    const { x, y } = this.getFixedSize(
       this.elStartWidth + this.curRelX,
       this.elStartHeight + this.curRelY,
     )
-    this.targetEl.style.width = `${fixedSize.mult_w}px`
-    this.targetEl.style.height = `${fixedSize.mult_h}px`
+    this.targetEl.style.width = `${x + 0.001}px`
+    this.targetEl.style.height = `${y + 0.001}px`
     // console.log(this.scaleAxis.dx)
-  }
-
-  _stop(e: MouseEvent): void {
-    super._stop(e)
-    this._stopFnCallback()
-  }
-
-  test() {
-    console.log(this.targetEl)
   }
 }

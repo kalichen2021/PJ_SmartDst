@@ -31,8 +31,8 @@ const initializeParticles = (rows: number, cols: number, intervalX: number, inte
       const p = new Particle({
         x: row * intervalX,
         y: col * intervalY,
-        color: "rgba(0, 163, 123, 0.546)",
-        radius: 10,
+        color: "rgba(0, 163, 123, 0.5)",
+        radius: 8,
       });
       rowParticles.push(p);
     }
@@ -65,8 +65,9 @@ watch(
 
     const rows = Math.floor(backMedia.canvas.width / elStore.intervalX);
     const cols = Math.floor(backMedia.canvas.height / elStore.intervalY);
+    console.log(elStore.intervalX)
 
-    particles.push(...initializeParticles(rows, cols, elStore.intervalX, elStore.intervalY));
+    particles.push(...initializeParticles(rows, cols, 57.59, 59.19));
     backMedia.addItem<Particle>(particles);
     backMedia.process();
   }
@@ -84,12 +85,11 @@ onMounted(() => {
     }
   };
 
-  const throttledMouseMove = throttle(handleMouseMove, 0);
 
   document.addEventListener("mousemove", handleMouseMove);
 
   onUnmounted(() => {
-    document.removeEventListener("mousemove", throttledMouseMove);
+    document.removeEventListener("mousemove", handleMouseMove);
   });
 });
 </script>
