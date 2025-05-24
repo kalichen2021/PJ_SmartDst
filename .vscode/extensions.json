@@ -1,6 +1,6 @@
 {
-  "recommendations": [
-    "Vue.volar",
-    "esbenp.prettier-vscode"
+  "recommendations": [],
+  "unwantedRecommendations": [
+    "godot-tools.godot-vscode"
   ]
 }

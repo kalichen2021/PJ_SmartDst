@@ -141,6 +141,7 @@ export class MagneticTransitionHandler extends DragHandler {
 
 export class MoveHandler extends MagneticTransitionHandler {
   curPosition: Point
+  updateInterval: number | null = null
   constructor(
     el: HTMLElement,
     interval?: {
@@ -153,6 +154,7 @@ export class MoveHandler extends MagneticTransitionHandler {
   ) {
     super(el, interval, _startFnCallback, _processFnCallback, _stopFnCallback)
     this.curPosition = [0, 0]
+    this.updateInterval = null
   }
 
   private get targetElAxis() {
@@ -169,6 +171,9 @@ export class MoveHandler extends MagneticTransitionHandler {
     super._start(e)
     this.startX -= this.targetElAxis.x0
     this.startY -= this.targetElAxis.y0
+    this.updateInterval = setInterval(() => {
+      this._processInnerFunc()
+    }, 100) // 每100ms更新一次
   }
 
   _processInnerFunc(): void {
@@ -179,6 +184,14 @@ export class MoveHandler extends MagneticTransitionHandler {
     this.curPosition = [x, y]
     this.targetEl.style.transform = `translate(${x}px, ${y}px)`
     this._processFnCallback()
+  }
+
+  _stop(e: MouseEvent): void {
+    super._stop(e)
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval)
+      this.updateInterval = null
+    }
   }
 }
 

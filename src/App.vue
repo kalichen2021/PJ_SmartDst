@@ -19,12 +19,9 @@ const elementStore = useElementStore()
 const userOperaStore = UseUseOperaStore()
 
 const particles: Array<Particle>[] = []
-const testVal = ref(0)
+let requestId: number | null;
 
 
-const _getD = (x0: number, y0: number, x1: number, y1: number) => {
-  return Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2))
-}
 
 const initializeParticles = (rows: number, cols: number, intervalX: number, intervalY: number) => {
   const newParticles: Array<Particle[]> = [];
@@ -44,21 +41,34 @@ const initializeParticles = (rows: number, cols: number, intervalX: number, inte
   return newParticles;
 };
 
-const animateParticle = (p: Particle, radiusChange: AniNumOpt, duration: number, callbackDuration: number) => {
-  p.animate(
-    {
-      radius: radiusChange,
-      duration,
-    },
-    // (_this) => {
-    //   _this.animate({
-    //     radius: 10,
-    //     duration: callbackDuration,
-    //   });
-    // }
-  );
+const animateParticle = (p: Particle, squere: Polygon) => {
+  // if (!p.needsUpdate) return;
+  p.animate({
+    radius: isInPolygon([p.x, p.y], squere) ? 20 : 8,
+    duration: isInPolygon([p.x, p.y], squere) ? 100 : 400
+  });
+  // p.needsUpdate = false;
 };
 
+const handleMouseMove = throttle(() => {
+  if (userOperaStore.ctrlState !== "move") {
+    cancelAnimationFrame(requestId ?? 999);
+    requestId = null;
+    return;
+  }
+  const squere: Polygon = rectToPolygon({
+    x: userOperaStore.iconGroupPosition[0],
+    y: userOperaStore.iconGroupPosition[1],
+    width: elementStore.intervalX * userOperaStore.icnoGroupSize[0] * 1.1,
+    height: elementStore.intervalY * userOperaStore.icnoGroupSize[1] * 1.1
+  });
+  for (const row of particles) {
+    for (const p of row) {
+      animateParticle(p, squere);
+    }
+  }
+  requestId = requestAnimationFrame(() => handleMouseMove());
+}, 16);
 
 watch(
   () => elementStore.intervalX,
@@ -76,40 +86,14 @@ watch(
   }
 );
 
+
 onMounted(() => {
-  const handleMouseMove = (e: MouseEvent) => {
-    if (userOperaStore.ctrlState !== "move") return;
-    const squere: Polygon = rectToPolygon({
-      x: userOperaStore.iconGroupPosition[0],
-      y: userOperaStore.iconGroupPosition[1],
-      width: elementStore.intervalX * userOperaStore.icnoGroupSize[0] * 1.1,
-      height: elementStore.intervalY * userOperaStore.icnoGroupSize[1] * 1.1
-    })
-    for (const row of particles) {
-      for (const p of row) {
-        if (
-          isInPolygon([p.x, p.y], squere)
-        ) {
-          p.animate({
-            radius: 20,
-            duration: 100
-          })
-        } else {
-          p.animate({
-            radius: 8,
-            duration: 400
-          })
-        }
-      }
-    }
-  };
-
-
   document.addEventListener("mousemove", handleMouseMove);
+});
 
-  onUnmounted(() => {
-    document.removeEventListener("mousemove", handleMouseMove);
-  });
+onUnmounted(() => {
+  cancelAnimationFrame(requestId ?? 1);
+  document.removeEventListener("mousemove", handleMouseMove);
 });
 </script>
 

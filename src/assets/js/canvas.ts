@@ -112,6 +112,7 @@ export class Particle extends canvasInfo {
   dr: number;
   isAni: boolean;
   _originAttr: Particle | null;
+  public needUpdate: boolean = false;
 
   constructor({
     x,
