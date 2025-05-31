@@ -13,8 +13,6 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
 }
 
 
-
-
 //#region  Geometry
 export const getD = (axis0: Point, axis1?: Point) => {
   if (!axis1) {
@@ -158,15 +156,15 @@ export const clickSwhToHide = (
     return _r;
   };
 
-  const _hide = (e: MouseEvent, storage: typeof customStorage) => {
+  const _hide = (e: MouseEvent) => {
     if (_isExcludeEl(e.target as HTMLElement)) {
       return;
-    };
-    document.removeEventListener("mousedown", e => _hide(e, customStorage));
+    }
+    document.removeEventListener("mousedown", _hide);
     [...willHiddenElement].forEach((el) => (el.style.display = "none"));
-    storage.hideCallback?.();
+    customStorage.hideCallback?.();
   };
-  document.addEventListener("mousedown", e => _hide(e, customStorage));
+  document.addEventListener("mousedown", _hide);
 };
 
 export const logPerformance = (label: string): void => {

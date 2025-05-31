@@ -51,18 +51,22 @@ const animateParticle = (p: Particle, squere: Polygon) => {
   // p.needsUpdate = false;
 };
 
-const handleMouseMove = (curPosition: Point) => {
-  if (userOperaStore.ctrlState !== "move") {
+const canvasAnimate = (curPosition: Point) => {
+  if (userOperaStore.ctrlState === "IDLE") {
     cancelAnimationFrame(requestId ?? 999);
     requestId = null;
     return;
   }
+  const { intervalX, intervalY } = elementStore
+  const { icnoGroupSize } = userOperaStore
+  console.log({ icnoGroupSize })
   const squere: Polygon = rectToPolygon({
-    x: curPosition[0],
-    y: curPosition[1],
-    width: elementStore.intervalX * userOperaStore.icnoGroupSize[0] * 1.1,
-    height: elementStore.intervalY * userOperaStore.icnoGroupSize[1] * 1.1
+    x: curPosition[0] + intervalX * .5,
+    y: curPosition[1] + intervalY * .5,
+    width: intervalX * icnoGroupSize[0],
+    height: intervalY * icnoGroupSize[1]
   });
+
   for (const row of particles) {
     for (const p of row) {
       animateParticle(p, squere);
@@ -74,13 +78,14 @@ watch(
   () => elementStore.intervalX,
   (c, p) => {
     const backMedia = new canvasOperator();
+    const { intervalX, intervalY } = elementStore
     backMedia.init();
 
     const rows = Math.floor(backMedia.canvas.width / elementStore.intervalX);
     const cols = Math.floor(backMedia.canvas.height / elementStore.intervalY);
-    console.log(elementStore.intervalX)
+    console.log(intervalX, intervalY)
 
-    particles.push(...initializeParticles(rows, cols, 57.59, 59.19));
+    particles.push(...initializeParticles(rows, cols, intervalX, intervalY));
     backMedia.addItem<Particle>(particles);
     backMedia.process();
   }
@@ -88,7 +93,7 @@ watch(
 
 
 onMounted(() => {
-  userOperaStore.moveCanvasBehaviour = handleMouseMove;
+  userOperaStore.canvasAnimate = canvasAnimate;
   userOperaStore.initializeParticles = initializeParticles;
   // document.addEventListener("mousemove", handleMouseMove);
 });

@@ -94,7 +94,7 @@ onMounted(() => {
    * 
    * 编辑状态下，文件图标组的控制器可拖动、缩放
    */
-  // 应用右键菜单
+  //#region 应用右键菜单
   elCtnMenu.value!.apply(elIconGrpCtn.value!)
   // 右键菜单条目设置
   entriesConf.value = [{
@@ -107,11 +107,11 @@ onMounted(() => {
       clickSwhToHide(
         GrpCtnControllerList,
         [elCtnMenu.value!.dom!, elIconGrp.value!],
-        () => console.log("编辑状态")
+        // () => console.log("编辑状态")
       )
     }
   }]
-
+  //#endregion
 
 
   // 控件事件
@@ -126,19 +126,17 @@ onMounted(() => {
       _startFnCallback: () => {
         // console.log("start")
         elIconGrp.value!.style.transition = _tranStyle
-        userOperaStore.ctrlState = "move"
+        userOperaStore.ctrlState = "MOVE"
       },
       _processFnCallback: () => {
-        userOperaStore.moveCanvasBehaviour(mvHder.curPosition)
-        // userOperaStore.iconGroupPosition = [
-        //   mvHder.curPosition[0],
-        //   mvHder.curPosition[1]
-        //]
+        // 绘制canvas网格
+        userOperaStore.canvasAnimate(mvHder.curPosition)
       },
       _stopFnCallback: () => {
-        userOperaStore.moveCanvasBehaviour(mvHder.curPosition)
+        userOperaStore.canvasAnimate(mvHder.curPosition)
         elIconGrp.value!.style.removeProperty('transition')
-        userOperaStore.ctrlState = null
+        userOperaStore.ctrlState = "IDLE"
+        console.log("stop")
         // userOperaStore.iconGroupPosition = [
         //   mvHder.curPosition[0],
         //   mvHder.curPosition[1]
@@ -146,6 +144,7 @@ onMounted(() => {
       }
     }
   );
+
   const sclHder = new ScaleHandler(
     elGridCtn.value!,
     {
@@ -154,19 +153,20 @@ onMounted(() => {
         elIconGrp.value!.style.transition = _tranStyle
         elIconGrpCtn.value!.style.transition = _tranStyle
         elGridCtn.value!.style.transition = _tranStyle
-        userOperaStore.ctrlState = "scale"
+        userOperaStore.ctrlState = "SCALE"
       },
       _processFnCallback: () => {
         userOperaStore.icnoGroupSize = [
           sclHder.curSize[0],
           sclHder.curSize[1]
         ]
+        userOperaStore.canvasAnimate(mvHder.curPosition)
       },
       _stopFnCallback: () => {
         elIconGrp.value!.style.removeProperty('transition')
         elIconGrpCtn.value!.style.removeProperty('transition')
         elGridCtn.value!.style.removeProperty('transition')
-        userOperaStore.ctrlState = null
+        userOperaStore.ctrlState = "IDLE"
       }
     }
   );

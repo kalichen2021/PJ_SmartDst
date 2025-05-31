@@ -61,10 +61,7 @@ const isInvisible = ref<boolean>(false)
 
 onMounted(() => {
   const slots = useSlots();
-  console.log('Slot content:', slots.default?.());
-
-
-
+  // console.log('Slot content:', slots.default?.());
 });
 </script>
 

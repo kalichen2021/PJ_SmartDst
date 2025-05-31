@@ -18,16 +18,12 @@ export function rightClickHandler(
 export class DragHandler {
   /** 操作对象 */
   targetEl: HTMLElement
-
   /** 鼠标初始x坐标 */
   startX: number = 0
-
   /** 鼠标初始y坐标 */
   startY: number = 0
-
   /** 鼠标当前相对x坐标 */
   curRelX: number = 0
-
   /** 鼠标当前相对y坐标 */
   curRelY: number = 0
 
@@ -56,28 +52,24 @@ export class DragHandler {
     // 动态绑定事件
     document.addEventListener('mousemove', this._process.bind(this))
     document.addEventListener('mouseup', this._stop.bind(this))
+    this._processInnerFunc()
 
     console.log('Drag started')
   }
 
   _process(e: MouseEvent) {
     if (!this.isDragging) return
-
     e.preventDefault()
     this.curRelX = e.clientX - this.startX
     this.curRelY = e.clientY - this.startY
-
-    // 使用 requestAnimationFrame 优化 DOM 更新
-    if (this.animationFrameId === null) {
-      this.animationFrameId = requestAnimationFrame(() => {
-        this._processInnerFunc()
-        this.animationFrameId = null
-      })
-    }
   }
 
   _processInnerFunc() {
-    null
+    // 使用 requestAnimationFrame 优化 DOM 更新
+    cancelAnimationFrame(this.animationFrameId!)
+    this.animationFrameId = requestAnimationFrame(() => {
+      this._processInnerFunc()
+    })
   }
 
   _stop(e: MouseEvent) {
@@ -123,7 +115,12 @@ export class MagneticTransitionHandler extends DragHandler {
     this._processFnCallback = _processFnCallback ?? (() => {})
     this._stopFnCallback = _stopFnCallback ?? (() => {})
   }
-
+  /**
+   * 获得最近的固定点
+   * @param _x - x坐标
+   * @param _y - y坐标
+   * @returns 最近的固定点
+   */
   getFixedSize(_x: number, _y: number): { x: number; y: number } {
     return {
       x: Math.round(_x / this.interval.x) * this.interval.x,
@@ -136,7 +133,13 @@ export class MagneticTransitionHandler extends DragHandler {
     this._startFnCallback()
   }
 
+  _processInnerFunc(): void {
+    this._processFnCallback()
+    super._processInnerFunc() // 调用父类的 _processInnerFunc 方法，实现动画效果
+  }
+
   _stop(e: MouseEvent): void {
+    if (!this.isDragging) return
     super._stop(e)
     this._stopFnCallback()
   }
@@ -144,23 +147,23 @@ export class MagneticTransitionHandler extends DragHandler {
 
 export class MoveHandler extends MagneticTransitionHandler {
   curPosition: Point
-  updateInterval: number | null = null
   constructor(
     el: HTMLElement,
     options: {
       interval?: { x: number; y: number }
-
       _startFnCallback?: () => void
       _processFnCallback?: () => void
       _stopFnCallback?: () => void
     } = {},
   ) {
-    // 由于 options 是对象，不能直接展开，需将对象属性解构后按顺序传递
     super(el, options)
     this.curPosition = [0, 0]
-    this.updateInterval = null
   }
 
+  /**
+   * 获得目标元素的初始位置
+   * @returns 目标元素的初始位置
+   */
   private get targetElAxis() {
     // const x0 = parseInt(this.targetEl.style.left || '0', 10) || 0
     // const y0 = parseInt(this.targetEl.style.top || '0', 10) || 0
@@ -171,13 +174,14 @@ export class MoveHandler extends MagneticTransitionHandler {
 
     return { x0, y0 }
   }
+
   _start(e: MouseEvent): void {
     super._start(e)
     this.startX -= this.targetElAxis.x0
     this.startY -= this.targetElAxis.y0
-    this.updateInterval = setInterval(() => {
-      this._processInnerFunc()
-    }, 100) // 每100ms更新一次
+    // this.updateInterval = setInterval(() => {
+    //   this._processInnerFunc()
+    // }, 100) // 每100ms更新一次
   }
 
   _processInnerFunc(): void {
@@ -187,15 +191,8 @@ export class MoveHandler extends MagneticTransitionHandler {
     const { x, y } = this.getFixedSize(this.curRelX, this.curRelY)
     this.curPosition = [x, y]
     this.targetEl.style.transform = `translate(${x}px, ${y}px)`
-    this._processFnCallback()
-  }
-
-  _stop(e: MouseEvent): void {
-    super._stop(e)
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval)
-      this.updateInterval = null
-    }
+    // this._processFnCallback()
+    super._processInnerFunc()
   }
 }
 
@@ -227,8 +224,7 @@ export class ScaleHandler extends MagneticTransitionHandler {
     this.curSize = [Math.floor(x / this.interval.x), Math.round(y / this.interval.y)]
     this.targetEl.style.width = `${x + 0.001}px`
     this.targetEl.style.height = `${y + 0.001}px`
-
-    this._processFnCallback()
+    super._processInnerFunc()
     // console.log(this.scaleAxis.dx)
   }
 }
