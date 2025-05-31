@@ -2,6 +2,7 @@
 
   <canvas id="back-media"></canvas>
   <RouterView />
+
 </template>
 
 
@@ -11,7 +12,7 @@ import { onMounted, watch, ref, onUnmounted } from 'vue';
 import { useElementStore } from '@/stores/counter';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
-import type { AniNumOpt, CanvasItem, Polygon, Rect } from './assets/js/type'
+import type { AniNumOpt, CanvasItem, Point, Polygon, Rect } from './assets/js/type'
 import { getCssVal, getD, getRandom, isInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
 import { UseUseOperaStore } from './stores/UserOpera';
 
@@ -50,15 +51,15 @@ const animateParticle = (p: Particle, squere: Polygon) => {
   // p.needsUpdate = false;
 };
 
-const handleMouseMove = throttle(() => {
+const handleMouseMove = (curPosition: Point) => {
   if (userOperaStore.ctrlState !== "move") {
     cancelAnimationFrame(requestId ?? 999);
     requestId = null;
     return;
   }
   const squere: Polygon = rectToPolygon({
-    x: userOperaStore.iconGroupPosition[0],
-    y: userOperaStore.iconGroupPosition[1],
+    x: curPosition[0],
+    y: curPosition[1],
     width: elementStore.intervalX * userOperaStore.icnoGroupSize[0] * 1.1,
     height: elementStore.intervalY * userOperaStore.icnoGroupSize[1] * 1.1
   });
@@ -67,8 +68,7 @@ const handleMouseMove = throttle(() => {
       animateParticle(p, squere);
     }
   }
-  requestId = requestAnimationFrame(() => handleMouseMove());
-}, 16);
+};
 
 watch(
   () => elementStore.intervalX,
@@ -88,12 +88,14 @@ watch(
 
 
 onMounted(() => {
-  document.addEventListener("mousemove", handleMouseMove);
+  userOperaStore.moveCanvasBehaviour = handleMouseMove;
+  userOperaStore.initializeParticles = initializeParticles;
+  // document.addEventListener("mousemove", handleMouseMove);
 });
 
 onUnmounted(() => {
-  cancelAnimationFrame(requestId ?? 1);
-  document.removeEventListener("mousemove", handleMouseMove);
+  // cancelAnimationFrame(requestId ?? 999);
+  // document.removeEventListener("mousemove", handleMouseMove);
 });
 </script>
 

@@ -75,11 +75,16 @@ const elCtnMenu = ref<InstanceType<typeof CtnMenu> | null>(null)
 
 
 onMounted(() => {
-  // 文件图标组是否为编辑状态
-  const isElIconGrpCtnConf = ref<Boolean>(false)
   // 获取控制器元素
-  const GrpCtnController =
-    elIconGrpCtn.value!.querySelectorAll(".controller");
+  const GrpCtnControllerList = Array.from(
+    elIconGrpCtn.value!.querySelectorAll(".controller")
+  ) as HTMLElement[];
+
+  const enableCtrlerWork = () => {
+    // 允许拖动控件工作
+    elGrabBar.value!.draggable = true;
+    GrpCtnControllerList.forEach((el) => el!.style.display = "block")
+  }
 
   /**
    * 编辑文件图标组步骤说明；
@@ -89,8 +94,6 @@ onMounted(() => {
    * 
    * 编辑状态下，文件图标组的控制器可拖动、缩放
    */
-
-
   // 应用右键菜单
   elCtnMenu.value!.apply(elIconGrpCtn.value!)
   // 右键菜单条目设置
@@ -99,14 +102,17 @@ onMounted(() => {
     animate: "rotate-ani",
     // 点击进入控件设置
     clickHandler: () => {
-      // 允许拖动控件工作
-      const GrpCtnControllerList = Array.from(GrpCtnController) as HTMLElement[]
-      elGrabBar.value!.draggable = true;
-      GrpCtnControllerList.forEach((el) => el!.style.display = "block")
+      enableCtrlerWork()
       // 点击空白位置，隐藏控件
-      clickSwhToHide(GrpCtnControllerList, [elCtnMenu.value!.dom!, elIconGrp.value!])
+      clickSwhToHide(
+        GrpCtnControllerList,
+        [elCtnMenu.value!.dom!, elIconGrp.value!],
+        () => console.log("编辑状态")
+      )
     }
   }]
+
+
 
   // 控件事件
   const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
@@ -115,53 +121,53 @@ onMounted(() => {
   const _tranStyle = "all .3s"
   const mvHder = new MoveHandler(
     elIconGrp.value!,
-    interval,
-    // 添加过渡
-    // _start 回调
-    () => {
-      // console.log("start")
-      elIconGrp.value!.style.transition = _tranStyle
-      userOperaStore.ctrlState = "move"
-    },
-    () => {
-      userOperaStore.iconGroupPosition = [
-        mvHder.curPosition[0],
-        mvHder.curPosition[1]
-      ]
-    },
-    // _stop 回调
-    () => {
-      elIconGrp.value!.style.removeProperty('transition')
-      userOperaStore.ctrlState = null
-      // userOperaStore.iconGroupPosition = [
-      //   mvHder.curPosition[0],
-      //   mvHder.curPosition[1]
-      // ]
+    {
+      interval,
+      _startFnCallback: () => {
+        // console.log("start")
+        elIconGrp.value!.style.transition = _tranStyle
+        userOperaStore.ctrlState = "move"
+      },
+      _processFnCallback: () => {
+        userOperaStore.moveCanvasBehaviour(mvHder.curPosition)
+        // userOperaStore.iconGroupPosition = [
+        //   mvHder.curPosition[0],
+        //   mvHder.curPosition[1]
+        //]
+      },
+      _stopFnCallback: () => {
+        userOperaStore.moveCanvasBehaviour(mvHder.curPosition)
+        elIconGrp.value!.style.removeProperty('transition')
+        userOperaStore.ctrlState = null
+        // userOperaStore.iconGroupPosition = [
+        //   mvHder.curPosition[0],
+        //   mvHder.curPosition[1]
+        // ]
+      }
     }
   );
   const sclHder = new ScaleHandler(
     elGridCtn.value!,
-    interval,
-    // 添加过渡
-    // _start 回调
-    () => {
-      elIconGrp.value!.style.transition = _tranStyle
-      elIconGrpCtn.value!.style.transition = _tranStyle
-      elGridCtn.value!.style.transition = _tranStyle
-      userOperaStore.ctrlState = "scale"
-    },
-    () => {
-      userOperaStore.icnoGroupSize = [
-        sclHder.curSize[0],
-        sclHder.curSize[1]
-      ]
-    },
-    // _stop 回调
-    () => {
-      elIconGrp.value!.style.removeProperty('transition')
-      elIconGrpCtn.value!.style.removeProperty('transition')
-      elGridCtn.value!.style.removeProperty('transition')
-      userOperaStore.ctrlState = null
+    {
+      interval,
+      _startFnCallback: () => {
+        elIconGrp.value!.style.transition = _tranStyle
+        elIconGrpCtn.value!.style.transition = _tranStyle
+        elGridCtn.value!.style.transition = _tranStyle
+        userOperaStore.ctrlState = "scale"
+      },
+      _processFnCallback: () => {
+        userOperaStore.icnoGroupSize = [
+          sclHder.curSize[0],
+          sclHder.curSize[1]
+        ]
+      },
+      _stopFnCallback: () => {
+        elIconGrp.value!.style.removeProperty('transition')
+        elIconGrpCtn.value!.style.removeProperty('transition')
+        elGridCtn.value!.style.removeProperty('transition')
+        userOperaStore.ctrlState = null
+      }
     }
   );
 

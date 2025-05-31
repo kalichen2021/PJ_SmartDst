@@ -23,11 +23,6 @@ import type { TP_entryConf } from '@/assets/js/type'
 import { clickSwhToHide, isInDom } from '@/assets/js/utils'
 
 
-// interface TP_entryConf {
-//   name?: string
-//   animate: string
-//   callback: () => void
-// }
 
 const elCtnMenu = ref<HTMLElement | null>(null)
 
@@ -41,7 +36,7 @@ const apply = (el: HTMLElement) => {
     isClicked = true
     console.log("进入菜单设置")
     // 点击空白位置，隐藏菜单栏
-    clickSwhToHide(elCtnMenu.value!, [], isInvisible)
+    clickSwhToHide(elCtnMenu.value!, [])
   });
 
 }

@@ -109,12 +109,15 @@ export class MagneticTransitionHandler extends DragHandler {
 
   constructor(
     el: HTMLElement,
-    interval?: { x: number; y: number },
-    _startFnCallback?: () => void,
-    _processFnCallback?: () => void,
-    _stopFnCallback?: () => void,
+    options: {
+      interval?: { x: number; y: number }
+      _startFnCallback?: () => void
+      _processFnCallback?: () => void
+      _stopFnCallback?: () => void
+    } = {},
   ) {
     super(el)
+    const { interval, _startFnCallback, _processFnCallback, _stopFnCallback } = options
     this.interval = interval ?? { x: 0, y: 0 }
     this._startFnCallback = _startFnCallback ?? (() => {})
     this._processFnCallback = _processFnCallback ?? (() => {})
@@ -144,15 +147,16 @@ export class MoveHandler extends MagneticTransitionHandler {
   updateInterval: number | null = null
   constructor(
     el: HTMLElement,
-    interval?: {
-      x: number
-      y: number
-    },
-    _startFnCallback?: () => void,
-    _processFnCallback?: () => void,
-    _stopFnCallback?: () => void,
+    options: {
+      interval?: { x: number; y: number }
+
+      _startFnCallback?: () => void
+      _processFnCallback?: () => void
+      _stopFnCallback?: () => void
+    } = {},
   ) {
-    super(el, interval, _startFnCallback, _processFnCallback, _stopFnCallback)
+    // 由于 options 是对象，不能直接展开，需将对象属性解构后按顺序传递
+    super(el, options)
     this.curPosition = [0, 0]
     this.updateInterval = null
   }
@@ -202,12 +206,14 @@ export class ScaleHandler extends MagneticTransitionHandler {
 
   constructor(
     el: HTMLElement,
-    interval: { x: number; y: number },
-    _startFnCallback?: () => void,
-    _processFnCallback?: () => void,
-    _stopFnCallback?: () => void,
+    option: {
+      interval: { x: number; y: number }
+      _startFnCallback?: () => void
+      _processFnCallback?: () => void
+      _stopFnCallback?: () => void
+    },
   ) {
-    super(el, interval, _startFnCallback, _processFnCallback, _stopFnCallback)
+    super(el, option)
     this.elStartWidth = this.targetEl.offsetWidth
     this.elStartHeight = this.targetEl.offsetHeight
     this.curSize = [3, 3]

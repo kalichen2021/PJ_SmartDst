@@ -1,4 +1,4 @@
-import { type Ref, ref } from "vue";
+import { type Ref, ref, unref } from "vue";
 import type { Circle, itemOrArray, Point, Polygon, Rect } from "./type";
 
 
@@ -12,7 +12,10 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
   return [i];
 }
 
-// Geometry
+
+
+
+//#region  Geometry
 export const getD = (axis0: Point, axis1?: Point) => {
   if (!axis1) {
     axis1 = axis0.map((val) => 0) as Point;
@@ -66,8 +69,10 @@ export const isInCircle = (
   const d: number = getD([cx, cy], point);
   return d <= r + precision;
 }
+// #endregion
 
 
+//#region 性能优化
 export const throttle = (func: Function, limit: number) => {
   let inThrottle: boolean;
   return function (this: any, ...args: any[]) {
@@ -78,8 +83,7 @@ export const throttle = (func: Function, limit: number) => {
     }
   };
 };
-
-
+// #endregion
 
 // 获得css根变量
 export const getCssVal = (valName: string) => {
@@ -123,20 +127,23 @@ export const getBoundingRectWithMargin = (element: HTMLElement) => {
 }
 
 
+const customStorage: { hideCallback?: Function } = {};
 /**
  * 点击空白位置，隐藏控件
  * @param willHiddenElement 需要隐藏的元素组, mousedown事件的e.target将会排除这些元素及其子元素, mousedown事件后隐藏
  * @param excludeElementGrp 需要排除的元素组, mousedown事件的e.target将会排除这些元素及其子元素
- * @param isVisibleVal 需要隐藏的元素组的显示状态, mousedown事件赋值为false
+ * @param hideCallback 隐藏后的回调函数，mousedown事件触发
+ * @param isVisibleVal 需要隐藏的元素组的显示状态（ref响应式变量）, mousedown事件赋值为false
  */
 export const clickSwhToHide = (
   willHiddenElement: itemOrArray<HTMLElement>,
   excludeElementGrp: itemOrArray<HTMLElement> = [],
-  isVisibleVal: Ref<boolean | null> = ref(null),
+  hideCallback?: Function,
 ) => {
   // tips：ts 类型断言，会影响整个文件的类型推导
   excludeElementGrp = toArray(excludeElementGrp);
   willHiddenElement = toArray(willHiddenElement);
+  customStorage.hideCallback = hideCallback;
 
   const _isExcludeEl = (targetEl: HTMLElement): boolean => {
     // tips: 使用return时注意多层嵌套
@@ -151,19 +158,15 @@ export const clickSwhToHide = (
     return _r;
   };
 
-  const _hide = (e: MouseEvent) => {
+  const _hide = (e: MouseEvent, storage: typeof customStorage) => {
     if (_isExcludeEl(e.target as HTMLElement)) {
       return;
     };
-    document.removeEventListener("mousedown", _hide);
-    if (typeof isVisibleVal.value === "boolean") {
-      isVisibleVal.value = false;
-      return;
-    }
+    document.removeEventListener("mousedown", e => _hide(e, customStorage));
     [...willHiddenElement].forEach((el) => (el.style.display = "none"));
+    storage.hideCallback?.();
   };
-
-  document.addEventListener("mousedown", _hide);
+  document.addEventListener("mousedown", e => _hide(e, customStorage));
 };
 
 export const logPerformance = (label: string): void => {
