@@ -129,18 +129,22 @@ onMounted(() => {
         userOperaStore.ctrlState = "MOVE"
       },
       _processFnCallback: () => {
+        userOperaStore.iconGroupPosition = [
+          mvHder.curPosition[0],
+          mvHder.curPosition[1]
+        ]
         // 绘制canvas网格
         userOperaStore.canvasAnimate(mvHder.curPosition)
       },
       _stopFnCallback: () => {
+        userOperaStore.iconGroupPosition = [
+          mvHder.curPosition[0],
+          mvHder.curPosition[1]
+        ]
         userOperaStore.canvasAnimate(mvHder.curPosition)
         elIconGrp.value!.style.removeProperty('transition')
         userOperaStore.ctrlState = "IDLE"
         console.log("stop")
-        // userOperaStore.iconGroupPosition = [
-        //   mvHder.curPosition[0],
-        //   mvHder.curPosition[1]
-        // ]
       }
     }
   );

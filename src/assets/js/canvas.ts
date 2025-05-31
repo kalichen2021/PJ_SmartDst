@@ -5,6 +5,24 @@ class canvasInfo {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 
+  // 新增性能优化参数
+  targetFPS = 60;
+  frameInterval = 1000 / 60;
+  lastFrameTime = 0;
+  batchUpdateQueue = new Set<() => void>();
+
+  // 新增批量更新方法
+  batchAnimate(callback: () => void) {
+    this.batchUpdateQueue.add(callback);
+  }
+
+  // 新增帧率控制方法
+  shouldUpdate() {
+    const now = Date.now();
+    const elapsed = now - this.lastFrameTime;
+    return elapsed >= this.frameInterval;
+  }
+
   constructor(canvas: HTMLCanvasElement = document.getElementById("back-media") as HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
@@ -43,13 +61,18 @@ export class canvasOperator extends canvasInfo {
    */
   process(drawParam?: Array<CanvasItem | CanvasItem[]>, ...update: ((objArray: CanvasItem[]) => void)[]) {
     const _processFrame = () => {
-      const param = drawParam || this.items;
-      if (param) {
-        this.clear();
-        this.draw(param);
-        for (const updater of update) {
-          updater(param as CanvasItem[]);
+      if (this.shouldUpdate()) {
+        const param = drawParam || this.items;
+        if (param) {
+          this.clear();
+          this.draw(param);
+          this.batchUpdateQueue.forEach(fn => fn());
+          this.batchUpdateQueue.clear();
+          for (const updater of update) {
+            updater(param as CanvasItem[]);
+          }
         }
+        this.lastFrameTime = Date.now();
       }
       requestAnimationFrame(_processFrame);
     };
@@ -199,16 +222,20 @@ export class Particle extends canvasInfo {
       const t0 = Date.now();
       const dT = (endAttr - startAttr) / duration;
 
+      var rafId = 0; // 新增：用于保存rafId
       const _process = () => {
         const dt = Date.now() - t0;
-        this[key] = startAttr + dT * dt;
+        const progress = Math.min(dt / duration, 1);
+        const easedProgress = options[0].easing ? options[0].easing(progress) : progress;
+        this[key] = startAttr + (endAttr - startAttr) * easedProgress;
         if (dt >= duration) {
           this[key] = endAttr;
           this.isAni = false;
           callback?.(this);
+          cancelAnimationFrame(rafId); // 新增：清理回调
           return;
         }
-        requestAnimationFrame(_process);
+        rafId = requestAnimationFrame(_process); // 保存rafId
       };
       _process();
     };

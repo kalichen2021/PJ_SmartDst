@@ -59,7 +59,6 @@ const canvasAnimate = (curPosition: Point) => {
   }
   const { intervalX, intervalY } = elementStore
   const { icnoGroupSize } = userOperaStore
-  console.log({ icnoGroupSize })
   const squere: Polygon = rectToPolygon({
     x: curPosition[0] + intervalX * .5,
     y: curPosition[1] + intervalY * .5,
@@ -67,9 +66,11 @@ const canvasAnimate = (curPosition: Point) => {
     height: intervalY * icnoGroupSize[1]
   });
 
-  for (const row of particles) {
-    for (const p of row) {
-      animateParticle(p, squere);
+  // 修改canvasAnimate中的遍历逻辑
+  for (let i = 0; i < particles.length; i++) {
+    const row = particles[i];
+    for (let j = 0; j < row.length; j++) {
+      animateParticle(row[j], squere);
     }
   }
 };

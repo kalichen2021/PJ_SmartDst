@@ -1,4 +1,5 @@
 import type { Point } from '@/assets/js/type'
+import { throttle } from '@/assets/js/utils'
 import { h, render, type Ref } from 'vue'
 
 export function rightClickHandler(
@@ -58,10 +59,12 @@ export class DragHandler {
   }
 
   _process(e: MouseEvent) {
-    if (!this.isDragging) return
-    e.preventDefault()
-    this.curRelX = e.clientX - this.startX
-    this.curRelY = e.clientY - this.startY
+    throttle(() => {
+      if (!this.isDragging) return
+      e.preventDefault()
+      this.curRelX = e.clientX - this.startX
+      this.curRelY = e.clientY - this.startY
+    }, 16)()
   }
 
   _processInnerFunc() {
@@ -200,6 +203,7 @@ export class ScaleHandler extends MagneticTransitionHandler {
   elStartWidth: number
   elStartHeight: number
   curSize: Point
+  maxSize: Point
 
   constructor(
     el: HTMLElement,
@@ -208,12 +212,24 @@ export class ScaleHandler extends MagneticTransitionHandler {
       _startFnCallback?: () => void
       _processFnCallback?: () => void
       _stopFnCallback?: () => void
+      maxSize?: Point
     },
   ) {
     super(el, option)
     this.elStartWidth = this.targetEl.offsetWidth
     this.elStartHeight = this.targetEl.offsetHeight
     this.curSize = [3, 3]
+    this.maxSize = option.maxSize ?? [3, 3]
+  }
+
+  getFixedSize(_x: number, _y: number): { x: number; y: number } {
+    _x = Math.max(_x, 0) // 限制最小宽度为 0
+    _y = Math.max(_y, 0) // 限制最小高度为 0
+    if (this.maxSize) {
+      _x = Math.min(_x, this.maxSize[0] * this.interval.x) // 限制最大宽度为 maxSize[0] * interval.x
+      _y = Math.min(_y, this.maxSize[1] * this.interval.y) // 限制最大高度为 maxSize[1] * interval.y
+    }
+    return super.getFixedSize(_x, _y) // 调用父类的 getFixedSize 方法，实现缩放效果
   }
 
   _processInnerFunc() {
