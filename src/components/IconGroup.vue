@@ -120,6 +120,7 @@ onMounted(() => {
   setIntervalXY(interval)
   const _tranStyle = "all .3s"
   const mvHder = new MoveHandler(
+    // #region 应用拖动功能
     elIconGrp.value!,
     {
       interval,
@@ -147,9 +148,11 @@ onMounted(() => {
         console.log("stop")
       }
     }
+    // #endregion
   );
 
   const sclHder = new ScaleHandler(
+    // #region 应用缩放功能
     elGridCtn.value!,
     {
       interval,
@@ -173,6 +176,7 @@ onMounted(() => {
         userOperaStore.ctrlState = "IDLE"
       }
     }
+    //#endregion
   );
 
   // 应用控件功能
