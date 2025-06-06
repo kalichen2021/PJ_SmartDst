@@ -1,2 +1,0 @@
-Set objShell = CreateObject("WScript.Shell")
-objShell.Run """D:\ProgramData\Windows\documents\Github-project\Wallpaper Project\PJ_SmartDst\Launcher\bin\Debug\net8.0\SmartDstLauncher.exe"" """ & WScript.Arguments(0) & """", 0, False

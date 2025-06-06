@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartDstLauncher")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d8b6961c10a73a7df5fed85573b0f84f335ed7dc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+75105e19ecae8653bca08447bf80271b0fe61f68")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartDstLauncher")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartDstLauncher")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

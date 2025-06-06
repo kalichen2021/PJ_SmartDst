@@ -79,6 +79,7 @@ class Program
             process.StartInfo.FileName = exePath;
             process.StartInfo.Arguments = arguments;
             process.StartInfo.WorkingDirectory = workingDir;
+            // 隐藏窗口
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             process.StartInfo.CreateNoWindow = true;
 
@@ -87,10 +88,10 @@ class Program
 
             process.Start();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Console.WriteLine($"启动失败: {ex.Message}");
-            // Console.WriteLine($"堆栈跟踪: {ex.StackTrace}");
+            Console.WriteLine($"启动失败: {ex.Message}");
+            Console.WriteLine($"堆栈跟踪: {ex.StackTrace}");
         }
     }
 }
