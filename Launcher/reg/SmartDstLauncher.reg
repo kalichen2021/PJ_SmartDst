@@ -1,0 +1,22 @@
+Windows Registry Editor Version 5.00
+
+; 动态启动器协议
+[HKEY_CLASSES_ROOT\SmartDstLauncher]
+@="URL: Dynamic Launcher Protocol"
+"URL Protocol"=""
+
+
+[HKEY_CLASSES_ROOT\SmartDstLauncher\shell\open\command]
+; @="cmd /k \"\"D:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\bin\\Debug\\net8.0\\SmartDstLauncher.exe\" \"%1\" ^&^& type \"%TEMP%\\SmartLauncher.log\"\""
+; @="\"D:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\bin\\Debug\\net8.0\\SmartDstLauncher.exe\" %1"
+; 静默启动，没有解决问题
+
+; @="cmd /c start \"\" /B \"D:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\bin\\Debug\\net8.0\\SmartDstLauncher.exe\" \"%1\""
+; @="rundll32 \"D:\ProgramData\Windows\documents\Github-project\Wallpaper Project\PJ_SmartDst\Launcher\LauncherProxy.dll\",RunEntryPoint \"%1\""
+@="wscript.exe \"D:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\SilentRunner.vbs\" \"%1\""
+
+
+; 解决UAC权限问题 
+; [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\rundll32.exe]
+; "UseURL"="1"
+; "Path"="C:\\Windows\\System32\\"

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\dist\\Launcher\\SmartDstLauncher.csproj": {}
+    "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\SmartDstLauncher.csproj": {}
   },
   "projects": {
-    "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\dist\\Launcher\\SmartDstLauncher.csproj": {
+    "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\SmartDstLauncher.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\dist\\Launcher\\SmartDstLauncher.csproj",
+        "projectUniqueName": "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\SmartDstLauncher.csproj",
         "projectName": "SmartDstLauncher",
-        "projectPath": "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\dist\\Launcher\\SmartDstLauncher.csproj",
+        "projectPath": "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\SmartDstLauncher.csproj",
         "packagesPath": "C:\\Users\\kalic\\.nuget\\packages\\",
-        "outputPath": "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\dist\\Launcher\\obj\\",
+        "outputPath": "d:\\ProgramData\\Windows\\documents\\Github-project\\Wallpaper Project\\PJ_SmartDst\\Launcher\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "D:\\ProgramData\\Windows\\AppData\\Roaming\\NuGet\\NuGet.Config"
