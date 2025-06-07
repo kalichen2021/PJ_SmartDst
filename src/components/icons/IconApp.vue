@@ -1,20 +1,32 @@
 <template>
-  <div class="icon-item" draggable="false">
+  <div class="icon-item" draggable="false" @click="LaunchApp">
     <img src="/favicon.ico" :alt="props.name">
     <span>{{ props.name }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
-
+import { computed } from "vue";
 
 const props = defineProps({
   name: {
     type: String,
     required: true,
   },
+  appPath: {
+    type: String,
+    default: "",
+  }
 });
 
+const EncodeAppPath = computed(() => {
+  const appPath = props.appPath ? props.appPath : "D:/Program Files/Typora/Typora.exe";
+  return encodeURIComponent(appPath);
+})
+
+const LaunchApp = () => {
+  window.location.href = `SmartDstLauncher://${EncodeAppPath.value}`;
+}
 </script>
 
 <style scoped>
@@ -52,10 +64,12 @@ img {
 }
 
 span {
-  font-size: 0.8rem;
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
   color: var(--color-text);
   text-align: center;
-  /* margin-top: 0rem; */
-  /* Add any additional styles for the text here */
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

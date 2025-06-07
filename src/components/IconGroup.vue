@@ -3,7 +3,7 @@
     <div class="border-container" ref="elIconGrpCtn">
       <div class="container" ref="elGridCtn">
         <div v-for="icon in icons" :key="icon.id" draggable="false" ref="elIconWrap" class="icon-item-wrap">
-          <icon-app :name="icon.name" />
+          <icon-app :name="icon.name" :app-path="icon.appPath" />
         </div>
       </div>
       <!-- 拖动控件 -->
@@ -34,7 +34,7 @@ import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
 import { UseUseOperaStore } from '@/stores/UserOpera.ts';
 
 const icons = ref([
-  { id: 1, name: 'home' },
+  { id: 1, name: '哔哩哔哩', appPath: "C:/ProgramData/Microsoft/Windows/Start Menu/Programs/哔哩哔哩.lnk" },
   { id: 2, name: 'settings' },
   { id: 3, name: 'user' },
   { id: 4, name: 'search' },

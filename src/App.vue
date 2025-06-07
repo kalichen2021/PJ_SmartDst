@@ -2,6 +2,7 @@
 
   <canvas id="back-media"></canvas>
   <RouterView />
+  <Test />
 
 </template>
 
@@ -15,6 +16,8 @@ import { canvasOperator, Particle } from './assets/js/canvas';
 import type { AniNumOpt, CanvasItem, Point, Polygon, Rect } from './assets/js/type'
 import { getCssVal, getD, getRandom, isInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
 import { UseUseOperaStore } from './stores/UserOpera';
+
+import Test from '@/components/Test.vue';
 
 const elementStore = useElementStore()
 const userOperaStore = UseUseOperaStore()

@@ -1,4 +1,4 @@
-# PJ_SmartDst
+# PJ_SmartDst Debugging
 
 This template should help get you started developing with Vue 3 in Vite.
 
@@ -31,3 +31,13 @@ pnpm dev
 ```sh
 pnpm build
 ```
+
+# Protocol Url Usage
+
+**示例网页链接** ：
+
+```html
+<a href="SmartDstLauncher://C:/Program Files/MyApp/app.exe?mode=debug">启动调试模式</a>
+```
+
+点击后，系统启动 `C:\Program Files\MyApp\app.exe` 并传递参数 `mode=debug`。
