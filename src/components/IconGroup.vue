@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
 import { useCounterStore, useElementStore } from '@/stores/counter';
-import { MoveHandler, ScaleHandler } from './utils/IconGroup.tsx';
+import { MoveHandler, ScaleHandler } from './utils/mouseInteract.tsx';
 import type { TP_entryConf } from '@/assets/js/type'
 
 import IconApp from './icons/IconApp.vue';
@@ -130,6 +130,7 @@ onMounted(() => {
         userOperaStore.ctrlState = "MOVE"
       },
       _processFnCallback: () => {
+        // 写入store
         userOperaStore.iconGroupPosition = [
           mvHder.curPosition[0],
           mvHder.curPosition[1]
@@ -138,6 +139,7 @@ onMounted(() => {
         userOperaStore.canvasAnimate(mvHder.curPosition)
       },
       _stopFnCallback: () => {
+        // 写入store
         userOperaStore.iconGroupPosition = [
           mvHder.curPosition[0],
           mvHder.curPosition[1]
@@ -163,6 +165,7 @@ onMounted(() => {
         userOperaStore.ctrlState = "SCALE"
       },
       _processFnCallback: () => {
+        // 写入store
         userOperaStore.icnoGroupSize = [
           sclHder.curSize[0],
           sclHder.curSize[1]

@@ -33,7 +33,7 @@ export const rectToPolygon = (rect: Rect): Polygon => {
   ];
 }
 
-export const isInPolygon = (
+export const isPointInPolygon = (
   point: Point,
   polygon: Polygon,
   precision: number = 0,
@@ -56,6 +56,14 @@ export const isInPolygon = (
 
   return isInside;
 };
+
+export const isPolygonInPolygon = (
+  polygon1: Polygon,
+  polygon2: Polygon,
+  precision: number = 0,
+) => {
+  return polygon1.every((point) => isPointInPolygon(point, polygon2, precision));
+}
 
 export const isInCircle = (
   circle: Circle,

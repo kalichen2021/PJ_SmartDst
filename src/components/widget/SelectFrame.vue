@@ -6,24 +6,24 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { ScaleHandler } from '../utils/IconGroup';
+import { SelectFrameHandler } from '../utils/mouseInteract';
 
 const elSelectFrame = ref<HTMLElement | null>(null)
 
 onMounted(() => {
   const interval = { x: 1, y: 1 }
-  const selectHder = new ScaleHandler(
+  const slfHder = new SelectFrameHandler(
+    // #region 应用缩放功能
     elSelectFrame.value!,
     {
       interval,
-      _startFnCallback: () => { },
-      _processFnCallback: () => { },
-      _stopFnCallback: () => { },
-      maxSize: [window.innerWidth, window.innerHeight],
-    },
+      _processFnCallback() {
 
+      },
+    }
   )
-  document.onmousedown = (e) => selectHder.apply(e)
+
+  document.onmousedown = e => slfHder.apply(e)
 })
 </script>
 
@@ -32,8 +32,8 @@ onMounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 0;
+  height: 0;
   background-color: rgba(255, 255, 255, 0.5);
   z-index: 1000;
 }

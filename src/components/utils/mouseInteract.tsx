@@ -1,5 +1,5 @@
-import type { Point } from '@/assets/js/type'
-import { throttle } from '@/assets/js/utils'
+import type { Point, Polygon } from '@/assets/js/type'
+import { rectToPolygon, throttle } from '@/assets/js/utils'
 import { h, render, type Ref } from 'vue'
 
 export function rightClickHandler(
@@ -242,5 +242,52 @@ export class ScaleHandler extends MagneticTransitionHandler {
     this.targetEl.style.height = `${y + 0.001}px`
     super._processInnerFunc()
     // console.log(this.scaleAxis.dx)
+  }
+}
+
+export class SelectFrameHandler extends MagneticTransitionHandler {
+  curPosition: Point
+  curSize: Point
+  selectRange: Polygon
+  constructor(
+    el: HTMLElement,
+    options: {
+      interval?: { x: number; y: number }
+      _startFnCallback?: () => void
+      _processFnCallback?: () => void
+      _stopFnCallback?: () => void
+    } = {},
+  ) {
+    super(el, options)
+    this.curPosition = [0, 0]
+    this.curSize = [0, 0]
+    this.selectRange = [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+      [0, 0],
+    ]
+  }
+  _start(e: MouseEvent): void {
+    this.targetEl.removeAttribute('style')
+    super._start(e)
+    this.targetEl.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`
+  }
+  _processInnerFunc(): void {
+    const { x: curWidth, y: curHeight } = this.getFixedSize(this.curRelX, this.curRelY)
+    this.targetEl.style.width = `${curWidth + 0.001}px`
+    this.targetEl.style.height = `${curHeight + 0.001}px`
+    this.selectRange = rectToPolygon({
+      x: this.curPosition[0],
+      y: this.curPosition[1],
+      width: curWidth,
+      height: curHeight,
+    })
+    super._processInnerFunc()
+  }
+
+  _stop(e: MouseEvent): void {
+    super._stop(e)
+    this.targetEl.removeAttribute('style')
   }
 }

@@ -14,9 +14,10 @@ import { UseUseOperaStore } from '@/stores/UserOpera';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
 import type { AniNumOpt, CanvasItem, Point, Polygon, Rect } from './assets/js/type'
-import { getCssVal, getD, getRandom, isInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
+import { getCssVal, getD, getRandom, isPointInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
 
 import SelectFrame from '@/components/widget/SelectFrame.vue'
+import { SelectFrameHandler } from './components/utils/mouseInteract';
 
 const elementStore = useElementStore()
 const userOperaStore = UseUseOperaStore()
@@ -47,8 +48,8 @@ const initializeParticles = (rows: number, cols: number, intervalX: number, inte
 const animateParticle = (p: Particle, squere: Polygon) => {
   // if (!p.needsUpdate) return;
   p.animate({
-    radius: isInPolygon([p.x, p.y], squere) ? 20 : 8,
-    duration: isInPolygon([p.x, p.y], squere) ? 100 : 400
+    radius: isPointInPolygon([p.x, p.y], squere) ? 20 : 8,
+    duration: isPointInPolygon([p.x, p.y], squere) ? 100 : 400
   });
   // p.needsUpdate = false;
 };
