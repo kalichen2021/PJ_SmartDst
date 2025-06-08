@@ -31,7 +31,7 @@ import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
 import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
-import { UseUseOperaStore } from '@/stores/UserOpera.ts';
+import { UseUserOperaStore } from '@/stores/UserOpera.ts';
 
 const icons = ref([
   { id: 1, name: 'home' },
@@ -60,7 +60,7 @@ const icons = ref([
 ]);
 
 const elementStore = useElementStore()
-const userOperaStore = UseUseOperaStore()
+const userOperaStore = UseUserOperaStore()
 const { setIntervalXY } = elementStore
 
 const elIconGrp = ref<HTMLElement | null>(null)
@@ -107,7 +107,12 @@ onMounted(() => {
       clickSwhToHide(
         GrpCtnControllerList,
         [elCtnMenu.value!.dom!, elIconGrp.value!],
-        // () => console.log("编辑状态")
+        // () => userOperaStore.ctrlState = "IDLE"
+        () => {
+          // 复原粒子效果
+          // console.log(userOperaStore.initializeParticles)
+          userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]])
+        }
       )
     }
   }]
@@ -166,7 +171,7 @@ onMounted(() => {
       },
       _processFnCallback: () => {
         // 写入store
-        userOperaStore.icnoGroupSize = [
+        userOperaStore.iconGroupSize = [
           sclHder.curSize[0],
           sclHder.curSize[1]
         ]

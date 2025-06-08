@@ -7,8 +7,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { SelectFrameHandler } from '../utils/mouseInteract';
+import { UseUserOperaStore } from '@/stores/UserOpera';
 
 const elSelectFrame = ref<HTMLElement | null>(null)
+
+const UserOperaStore = UseUserOperaStore()
 
 onMounted(() => {
   const interval = { x: 1, y: 1 }
@@ -23,7 +26,11 @@ onMounted(() => {
     }
   )
 
-  document.onmousedown = e => slfHder.apply(e)
+  document.onmousedown = e => {
+    if (UserOperaStore.ctrlState !== "IDLE") return
+    slfHder.dragable = true
+    slfHder.apply(e)
+  }
 })
 </script>
 

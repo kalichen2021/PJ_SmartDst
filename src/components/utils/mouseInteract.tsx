@@ -64,7 +64,6 @@ export class DragHandler {
       e.preventDefault()
       this.curRelX = e.clientX - this.startX
       this.curRelY = e.clientY - this.startY
-      console.log(this.startX)
     }, 16)()
   }
 
@@ -299,7 +298,6 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
       height: curHeight,
     })
     super._processInnerFunc()
-    console.log('process..')
   }
 
   _stop(e: MouseEvent): void {
