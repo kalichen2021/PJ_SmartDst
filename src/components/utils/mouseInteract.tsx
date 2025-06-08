@@ -64,8 +64,11 @@ export class DragHandler {
       e.preventDefault()
       this.curRelX = e.clientX - this.startX
       this.curRelY = e.clientY - this.startY
+      console.log(this.startX)
     }, 16)()
   }
+
+  // get curRelX() return e.clientX - this.startX
 
   _processInnerFunc() {
     // 使用 requestAnimationFrame 优化 DOM 更新
@@ -91,6 +94,12 @@ export class DragHandler {
       cancelAnimationFrame(this.animationFrameId)
       this.animationFrameId = null
     }
+
+    // 重置相关参数
+    this.curRelX = 0
+    this.curRelY = 0
+    this.startX = 0
+    this.startY = 0
 
     console.log('Drag stopped')
   }
@@ -150,6 +159,8 @@ export class MagneticTransitionHandler extends DragHandler {
 
 export class MoveHandler extends MagneticTransitionHandler {
   curPosition: Point
+  ElStartX: number = 0
+  ElStartY: number = 0
   constructor(
     el: HTMLElement,
     options: {
@@ -179,22 +190,24 @@ export class MoveHandler extends MagneticTransitionHandler {
   }
 
   _start(e: MouseEvent): void {
+    // tips: 小心监听器。还有整个函数的过程，它可能会让你刚改完的值右窜改成其他值。
+    // 所以要先把值存起来，然后再用。
+    this.ElStartX = this.targetElAxis.x0
+    this.ElStartY = this.targetElAxis.y0
     super._start(e)
-    this.startX -= this.targetElAxis.x0
-    this.startY -= this.targetElAxis.y0
     // this.updateInterval = setInterval(() => {
     //   this._processInnerFunc()
     // }, 100) // 每100ms更新一次
+    // console.log(this.startX)
   }
 
   _processInnerFunc(): void {
     // this.targetEl.style.left = `${this.curRelX}px`
     // this.targetEl.style.top = `${this.curRelY}px`
     // 使用 transform 替代 left 和 top
-    const { x, y } = this.getFixedSize(this.curRelX, this.curRelY)
+    const { x, y } = this.getFixedSize(this.curRelX + this.ElStartX, this.curRelY + this.ElStartY)
     this.curPosition = [x, y]
     this.targetEl.style.transform = `translate(${x}px, ${y}px)`
-    // this._processFnCallback()
     super._processInnerFunc()
   }
 }
@@ -241,7 +254,6 @@ export class ScaleHandler extends MagneticTransitionHandler {
     this.targetEl.style.width = `${x + 0.001}px`
     this.targetEl.style.height = `${y + 0.001}px`
     super._processInnerFunc()
-    // console.log(this.scaleAxis.dx)
   }
 }
 
@@ -249,6 +261,7 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
   curPosition: Point
   curSize: Point
   selectRange: Polygon
+  dragable: boolean = false
   constructor(
     el: HTMLElement,
     options: {
@@ -267,16 +280,18 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
       [0, 0],
       [0, 0],
     ]
+    this.dragable = false
   }
   _start(e: MouseEvent): void {
+    if (!this.dragable) return
     this.targetEl.removeAttribute('style')
     super._start(e)
     this.targetEl.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`
   }
   _processInnerFunc(): void {
     const { x: curWidth, y: curHeight } = this.getFixedSize(this.curRelX, this.curRelY)
-    this.targetEl.style.width = `${curWidth + 0.001}px`
-    this.targetEl.style.height = `${curHeight + 0.001}px`
+    this.targetEl.style.width = `${curWidth}px`
+    this.targetEl.style.height = `${curHeight}px`
     this.selectRange = rectToPolygon({
       x: this.curPosition[0],
       y: this.curPosition[1],
@@ -284,10 +299,12 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
       height: curHeight,
     })
     super._processInnerFunc()
+    console.log('process..')
   }
 
   _stop(e: MouseEvent): void {
     super._stop(e)
+    this.dragable = false
     this.targetEl.removeAttribute('style')
   }
 }
