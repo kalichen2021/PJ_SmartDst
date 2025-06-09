@@ -9,22 +9,22 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import { onMounted, watch, ref, onUnmounted } from 'vue';
-import { useElementStore } from '@/stores/counter';
 import { useUserOperaStore } from '@/stores/UserOpera';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
 import type { AniNumOpt, CanvasItem, Point, Polygon, Rect } from './assets/js/type'
-import { getCssVal, getD, getRandom, isPointInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
+import { getCssVal, getD, getIntervalXY, getRandom, isPointInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
 
 import SelectFrame from '@/components/widget/SelectFrame.vue'
 import { SelectFrameHandler } from './components/utils/mouseInteract';
 
-const elementStore = useElementStore()
 const userOperaStore = useUserOperaStore()
 const iconGroupClass = userOperaStore.iconGroupClass
 
 const particles: Array<Particle>[] = []
 let requestId: number | null;
+
+const interval = getIntervalXY()
 
 
 
@@ -83,10 +83,10 @@ const canvasAnimate = (() => {
     }
 
     // 增量更新store缓存
-    if (storeCache.intervalX !== elementStore.intervalX ||
-      storeCache.intervalY !== elementStore.intervalY) {
-      storeCache.intervalX = elementStore.intervalX;
-      storeCache.intervalY = elementStore.intervalY;
+    if (storeCache.intervalX !== interval.x ||
+      storeCache.intervalY !== interval.y) {
+      storeCache.intervalX = interval.x;
+      storeCache.intervalY = interval.y;
     }
     if (storeCache.iconGroupSize !== iconGroupClass.iconGroupSize) {
       storeCache.iconGroupSize = [...iconGroupClass.iconGroupSize] as Point;
@@ -110,25 +110,22 @@ const canvasAnimate = (() => {
   };
 })();
 
-watch(
-  () => elementStore.intervalX,
-  (c, p) => {
-    const backMedia = new canvasOperator();
-    const { intervalX, intervalY } = elementStore
-    backMedia.init();
-
-    const rows = Math.floor(backMedia.canvas.width / elementStore.intervalX);
-    const cols = Math.floor(backMedia.canvas.height / elementStore.intervalY);
-    console.log(intervalX, intervalY)
-
-    particles.push(...initializeParticles(rows, cols, intervalX, intervalY));
-    backMedia.addItem<Particle>(particles);
-    backMedia.process();
-  }
-);
 
 
 onMounted(() => {
+  const interval = getIntervalXY()
+  if (interval.x === 0) {
+    return;
+  }
+  const backMedia = new canvasOperator();
+  backMedia.init()
+  const rows = Math.floor(backMedia.canvas.width / interval.x);
+  const cols = Math.floor(backMedia.canvas.height / interval.y);
+
+
+  particles.push(...initializeParticles(rows, cols, interval.x, interval.y));
+  backMedia.addItem<Particle>(particles);
+  backMedia.process();
   userOperaStore.canvasAnimate = canvasAnimate;
   userOperaStore.initializeParticles = animateAllParticles
   // document.addEventListener("mousemove", handleMouseMove);

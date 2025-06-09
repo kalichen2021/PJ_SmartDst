@@ -1,16 +1,15 @@
 import type { iconGroupClass, Point, Polygon } from "@/assets/js/type";
-import { createLinkedState, rectToPolygon } from "@/assets/js/utils";
+import { createLinkedState, getIntervalXY, rectToPolygon } from "@/assets/js/utils";
 import { defineStore } from "pinia";
 import { computed, reactive, ref, type Ref } from "vue";
-import { useElementStore } from "./counter.ts";
 
 
 
 export const useUserOperaStore = defineStore('userOpera', () => {
-  const { intervalX, intervalY } = useElementStore()
+  const interval = getIntervalXY()
   const getClientVal = (relVal: Point) => {
     const [x, y] = relVal
-    return [x * intervalX, y * intervalY] as Point
+    return [x * interval.x, y * interval.y] as Point
   }
   const ctrlState: Ref<"MOVE" | "SCALE" | "IDLE" | "EDIT"> = ref("IDLE")
   // const iconGroupPosition: Ref<Point> = ref([0, 0])

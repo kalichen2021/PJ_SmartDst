@@ -12,6 +12,30 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
   return [i];
 }
 
+/**
+ * 创建联动响应式状态对象
+ * @template T 状态对象类型，应包含字符串键和任意值类型
+ * @param config 配置对象，包含两种类型的属性：
+ *               - 主动变量：直接赋值的基础值
+ *               - 从动变量：接收依赖参数并返回计算值的函数
+ * 
+ * @returns 返回包含以下内容的对象：
+ *          - 所有状态的响应式访问器
+ *          - update方法：用于批量更新主动变量
+ * 
+ * @example
+ * const state = createLinkedState({
+ *   width: 100,
+ *   height: 50,
+ *   area: ({ width, height }) => width * height,
+ *   ratio: ({ width, height }) => width / height
+ * });
+ * 
+ * state.update({ width: 200, height: 100 });
+ * // 也可以直接修改
+ * console.log(state.area);  // 20000
+ * console.log(state.ratio); // 2
+ */
 export const createLinkedState = <T extends Record<string, any>>(
   config: {
     [K in keyof T]: T[K] | ((deps: Omit<T, K>) => T[K])
@@ -66,6 +90,32 @@ export const createLinkedState = <T extends Record<string, any>>(
   };
 
   return Object.assign(state, { update });
+}
+
+export const getIntervalXY = (): { x: number, y: number } => {
+  // 从cookie中获取interval值
+  const parseCookie = (name: string): number => {
+    const value = document.cookie
+      .split('; ')
+      .find(row => row.startsWith(`${name}=`))
+      ?.split('=')[1];
+    return value ? parseInt(value) : 0;
+  };
+
+  return {
+    x: parseCookie('intervalX'),
+    y: parseCookie('intervalY')
+  };
+}
+
+export const setIntervalXY = (x: number, y: number) => {
+  // 设置interval值到cookie中
+  const setCookie = (name: string, value: number, days: number) => {
+    const expires = new Date(Date.now() + days * 864e+5).toUTCString();
+    document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+  }
+  setCookie('intervalX', x, 365);
+  setCookie('intervalY', y, 365);
 }
 
 //#region  Geometry

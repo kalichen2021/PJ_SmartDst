@@ -10,23 +10,14 @@ import { SelectFrameHandler } from '../utils/mouseInteract';
 import { isPolygonInPolygon } from '@/assets/js/utils';
 import type { Polygon } from '@/assets/js/type';
 import { useUserOperaStore } from '@/stores/UserOpera';
-import { useElementStore } from '@/stores/counter';
 import { watch } from 'vue';
 
 const elSelectFrame = ref<HTMLElement | null>(null)
 
 const userOperaStore = useUserOperaStore()
 const iconGroupClass = userOperaStore.iconGroupClass
-const elementStore = useElementStore()
-
 
 onMounted(() => {
-  watch(
-    () => elementStore.intervalX,
-    (c, p) => {
-
-    }
-  )
   const interval = { x: 1, y: 1 }
   const slfHder = new SelectFrameHandler(
     // #region 应用缩放功能

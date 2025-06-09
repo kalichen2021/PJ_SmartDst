@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
-import { useCounterStore, useElementStore } from '@/stores/counter';
+import { useCounterStore } from '@/stores/counter';
 import { MoveHandler, ScaleHandler } from './utils/mouseInteract.tsx';
 import type { TP_entryConf } from '@/assets/js/type'
 
@@ -30,7 +30,7 @@ import IconMore from './icons/IconMore.vue';
 import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
-import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
+import { clickSwhToHide, getBoundingRectWithMargin, setIntervalXY, getIntervalXY } from '@/assets/js/utils';
 import { useUserOperaStore } from '@/stores/UserOpera.ts';
 
 const icons = ref([
@@ -59,10 +59,10 @@ const icons = ref([
 
 ]);
 
-const elementStore = useElementStore()
+
 const userOperaStore = useUserOperaStore()
 const iconGroupClass = userOperaStore.iconGroupClass
-const { setIntervalXY } = elementStore
+// const { setIntervalXY } = elementStore
 
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
@@ -122,8 +122,12 @@ onMounted(() => {
 
   // 控件事件
   const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
-  const interval = { x: iconSize.width, y: iconSize.height }
-  setIntervalXY(interval)
+
+  const interval = getIntervalXY()
+  if (interval.x === 0) {
+    setIntervalXY(iconSize.height, iconSize.width)
+    location.reload()
+  }
   const _tranStyle = "all .3s"
 
   const storePosition = () => {
