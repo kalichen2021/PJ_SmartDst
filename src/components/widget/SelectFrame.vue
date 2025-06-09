@@ -7,13 +7,26 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { SelectFrameHandler } from '../utils/mouseInteract';
-import { UseUserOperaStore } from '@/stores/UserOpera';
+import { isPolygonInPolygon } from '@/assets/js/utils';
+import type { Polygon } from '@/assets/js/type';
+import { useUserOperaStore } from '@/stores/UserOpera';
+import { useElementStore } from '@/stores/counter';
+import { watch } from 'vue';
 
 const elSelectFrame = ref<HTMLElement | null>(null)
 
-const UserOperaStore = UseUserOperaStore()
+const userOperaStore = useUserOperaStore()
+const iconGroupClass = userOperaStore.iconGroupClass
+const elementStore = useElementStore()
+
 
 onMounted(() => {
+  watch(
+    () => elementStore.intervalX,
+    (c, p) => {
+
+    }
+  )
   const interval = { x: 1, y: 1 }
   const slfHder = new SelectFrameHandler(
     // #region 应用缩放功能
@@ -23,14 +36,19 @@ onMounted(() => {
       _processFnCallback() {
 
       },
+      _stopFnCallback() {
+        if (isPolygonInPolygon(iconGroupClass.iconGroupPolygon as Polygon, slfHder.selectRange)) {
+          console.log(iconGroupClass.iconGroupPolygon, slfHder.selectRange)
+        }
+      }
     }
   )
-
   document.onmousedown = e => {
-    if (UserOperaStore.ctrlState !== "IDLE") return
+    if (userOperaStore.ctrlState !== "IDLE") return
     slfHder.dragable = true
     slfHder.apply(e)
   }
+
 })
 </script>
 

@@ -31,7 +31,7 @@ import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
 import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
-import { UseUserOperaStore } from '@/stores/UserOpera.ts';
+import { useUserOperaStore } from '@/stores/UserOpera.ts';
 
 const icons = ref([
   { id: 1, name: 'home' },
@@ -60,7 +60,8 @@ const icons = ref([
 ]);
 
 const elementStore = useElementStore()
-const userOperaStore = UseUserOperaStore()
+const userOperaStore = useUserOperaStore()
+const iconGroupClass = userOperaStore.iconGroupClass
 const { setIntervalXY } = elementStore
 
 const elIconGrp = ref<HTMLElement | null>(null)
@@ -124,6 +125,19 @@ onMounted(() => {
   const interval = { x: iconSize.width, y: iconSize.height }
   setIntervalXY(interval)
   const _tranStyle = "all .3s"
+
+  const storePosition = () => {
+    iconGroupClass.iconGroupPosition = [
+      mvHder.curPosition[0],
+      mvHder.curPosition[1]
+    ]
+  }
+  const storeSize = () => {
+    iconGroupClass.iconGroupSize = [
+      sclHder.curSize[0],
+      sclHder.curSize[1]
+    ]
+  }
   const mvHder = new MoveHandler(
     // #region 应用拖动功能
     elIconGrp.value!,
@@ -136,19 +150,13 @@ onMounted(() => {
       },
       _processFnCallback: () => {
         // 写入store
-        userOperaStore.iconGroupPosition = [
-          mvHder.curPosition[0],
-          mvHder.curPosition[1]
-        ]
+        storePosition()
         // 绘制canvas网格
         userOperaStore.canvasAnimate(mvHder.curPosition)
       },
       _stopFnCallback: () => {
         // 写入store
-        userOperaStore.iconGroupPosition = [
-          mvHder.curPosition[0],
-          mvHder.curPosition[1]
-        ]
+        storePosition()
         userOperaStore.canvasAnimate(mvHder.curPosition)
         elIconGrp.value!.style.removeProperty('transition')
         userOperaStore.ctrlState = "IDLE"
@@ -171,10 +179,7 @@ onMounted(() => {
       },
       _processFnCallback: () => {
         // 写入store
-        userOperaStore.iconGroupSize = [
-          sclHder.curSize[0],
-          sclHder.curSize[1]
-        ]
+        storeSize()
         userOperaStore.canvasAnimate(mvHder.curPosition)
       },
       _stopFnCallback: () => {

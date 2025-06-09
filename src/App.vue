@@ -10,7 +10,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { onMounted, watch, ref, onUnmounted } from 'vue';
 import { useElementStore } from '@/stores/counter';
-import { UseUserOperaStore } from '@/stores/UserOpera';
+import { useUserOperaStore } from '@/stores/UserOpera';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
 import type { AniNumOpt, CanvasItem, Point, Polygon, Rect } from './assets/js/type'
@@ -20,7 +20,8 @@ import SelectFrame from '@/components/widget/SelectFrame.vue'
 import { SelectFrameHandler } from './components/utils/mouseInteract';
 
 const elementStore = useElementStore()
-const userOperaStore = UseUserOperaStore()
+const userOperaStore = useUserOperaStore()
+const iconGroupClass = userOperaStore.iconGroupClass
 
 const particles: Array<Particle>[] = []
 let requestId: number | null;
@@ -87,8 +88,8 @@ const canvasAnimate = (() => {
       storeCache.intervalX = elementStore.intervalX;
       storeCache.intervalY = elementStore.intervalY;
     }
-    if (storeCache.iconGroupSize !== userOperaStore.iconGroupSize) {
-      storeCache.iconGroupSize = [...userOperaStore.iconGroupSize];
+    if (storeCache.iconGroupSize !== iconGroupClass.iconGroupSize) {
+      storeCache.iconGroupSize = [...iconGroupClass.iconGroupSize] as Point;
     }
 
     // 对象池检索

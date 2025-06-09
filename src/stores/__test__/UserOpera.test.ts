@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
-import { UseUserOperaStore } from '../UserOpera'
+import { useUserOperaStore } from '../UserOpera'
 
-test('UseUserOperaStore', async () => {
-  // const userOperaStore = UseUserOperaStore()
+test('useUserOperaStore', async () => {
+  // const userOperaStore = useUserOperaStore()
   // expect(userOperaStore.iconGroupClass.name).toBe("default")
   // // expect(update).toBeDefined()
 })
