@@ -1,4 +1,4 @@
-import { type Ref, ref, unref } from "vue";
+import { type Reactive, reactive, type Ref, ref, toRef, triggerRef, unref, type UnwrapRef } from "vue";
 import type { Circle, itemOrArray, Point, Polygon, Rect } from "./type";
 
 
@@ -12,6 +12,45 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
   return [i];
 }
 
+export const autoSetItem = <Av, Dv>(
+  config: {
+    [K: string]: Av | ((val: Av) => Dv);
+  }
+) => {
+  const keys = Object.keys(config);
+  const activeKey = keys[0];
+  const drivenKey = keys[1];
+
+  // 将 active 值包装为 ref
+  const activeRef = ref(config[activeKey] as Av);
+  const driveFunc = config[drivenKey] as (val: Av) => Dv;
+
+  const state = reactive<{ [x: string]: Av | Dv; }>({
+    get [activeKey](): Av {
+      return activeRef.value;
+    },
+    set [activeKey](val: Av) {
+      update(val)
+    },
+    get [drivenKey](): Dv {
+      // 由于 this 类型不明确，这里将其断言为一个包含 activeKey 属性的对象
+      const typedThis = this as { [key: string]: Av };
+      // return activeRef as Dv;
+      // return driveFunc(state[activeKey] as Av)
+      return driveFunc(activeRef.value as Av)
+    },
+    set [drivenKey](val: Dv) {
+      throw new Error(`请通过 update${activeKey} 方法修改值`);
+    }
+  });
+
+  const update = (newVal: Av) => {
+    activeRef.value = newVal;
+    triggerRef(activeRef); // 触发响应式更新
+  };
+
+  return Object.assign(state, { update });
+}
 
 //#region  Geometry
 export const getD = (axis0: Point, axis1?: Point) => {
