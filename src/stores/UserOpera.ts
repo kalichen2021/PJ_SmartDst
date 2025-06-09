@@ -1,5 +1,5 @@
 import type { iconGroupClass, Point, Polygon } from "@/assets/js/type";
-import { rectToPolygon } from "@/assets/js/utils";
+import { createLinkedState, rectToPolygon } from "@/assets/js/utils";
 import { defineStore } from "pinia";
 import { computed, reactive, ref, type Ref } from "vue";
 
@@ -11,25 +11,18 @@ export const UseUserOperaStore = defineStore('userOpera', () => {
   const canvasAnimate: Ref<(curPosition: Point) => void> = ref(() => { })
   const initializeParticles: Ref<Function> = ref(() => { })
 
-  const iconGroupClass: Ref<iconGroupClass> = ref([
-    {
-      name: "default",
-      iconGroupPosition: [0, 0],
-      iconGroupSize: [3, 3],
-      position: reactive({
-        x: 0,
-        y: 0,
-        width: 3,
-        height: 3
-      }),
-      rangePolygon: computed(() => rectToPolygon({
-        x: position.x,
-        y: position.y,
-        width: position.width,
-        height: position.height
-      }))
-    }
-  ])
+  const iconGroupClass = createLinkedState({
+    name: "default",
+    iconGroupPosition: [0, 0],
+    iconGroupSize: [3, 3],
+    iconGroupPolygon: ({ iconGroupPosition, iconGroupSize }) => rectToPolygon({
+      x: iconGroupPosition[0],
+      y: iconGroupPosition[1],
+      width: iconGroupSize[0],
+      height: iconGroupSize[1]
+    })
+  })
+
   // const getIconGroupClass = (): iconGroupClass => {
   //   return []
   // }
@@ -49,6 +42,7 @@ export const UseUserOperaStore = defineStore('userOpera', () => {
     // iconGroupPosition,
     // iconGroupSize, 
     canvasAnimate, initializeParticles,
+    iconGroupClass
     // getIconGroupPolygon
   }
 })

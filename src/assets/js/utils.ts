@@ -12,41 +12,57 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
   return [i];
 }
 
-export const autoSetItem = <Av, Dv>(
+export const createLinkedState = <T extends Record<string, any>>(
   config: {
-    [K: string]: Av | ((val: Av) => Dv);
+    [K in keyof T]: T[K] | ((deps: Omit<T, K>) => T[K])
   }
 ) => {
-  const keys = Object.keys(config);
-  const activeKey = keys[0];
-  const drivenKey = keys[1];
+  const activeKeys = Object.keys(config).filter(k => typeof config[k] !== 'function');
+  const drivenKeys = Object.keys(config).filter(k => typeof config[k] === 'function');
 
-  // 将 active 值包装为 ref
-  const activeRef = ref(config[activeKey] as Av);
-  const driveFunc = config[drivenKey] as (val: Av) => Dv;
+  // 为所有主动变量创建ref
+  const activeRefs = activeKeys.reduce((acc, k) => {
+    acc[k] = ref(config[k]);
+    return acc;
+  }, {} as Record<string, Ref<any>>);
 
-  const state = reactive<{ [x: string]: Av | Dv; }>({
-    get [activeKey](): Av {
-      return activeRef.value;
-    },
-    set [activeKey](val: Av) {
-      update(val)
-    },
-    get [drivenKey](): Dv {
-      // 由于 this 类型不明确，这里将其断言为一个包含 activeKey 属性的对象
-      const typedThis = this as { [key: string]: Av };
-      // return activeRef as Dv;
-      // return driveFunc(state[activeKey] as Av)
-      return driveFunc(activeRef.value as Av)
-    },
-    set [drivenKey](val: Dv) {
-      throw new Error(`请通过 update${activeKey} 方法修改值`);
-    }
+  const state = reactive<{ [K in keyof T]: T[K] }>({} as any);
+
+  // 定义主动变量访问器
+  activeKeys.forEach(k => {
+    Object.defineProperty(state, k, {
+      get: () => activeRefs[k].value,
+      set: (val) => {
+        activeRefs[k].value = val;
+        triggerRef(activeRefs[k]);
+      }
+    });
   });
 
-  const update = (newVal: Av) => {
-    activeRef.value = newVal;
-    triggerRef(activeRef); // 触发响应式更新
+  // 定义从动变量访问器
+  drivenKeys.forEach(k => {
+    const driveFunc = config[k] as (deps: any) => T[typeof k];
+    Object.defineProperty(state, k, {
+      get: () => {
+        const deps = activeKeys.reduce((acc, key) => {
+          acc[key] = activeRefs[key].value;
+          return acc;
+        }, {} as any);
+        return driveFunc(deps);
+      },
+      set: () => {
+        throw new Error(`请通过 update 方法修改主动变量`);
+      }
+    });
+  });
+
+  const update = (newVals: Partial<typeof activeRefs>) => {
+    Object.entries(newVals).forEach(([k, v]) => {
+      if (activeRefs[k]) {
+        activeRefs[k].value = v;
+        triggerRef(activeRefs[k]);
+      }
+    });
   };
 
   return Object.assign(state, { update });
