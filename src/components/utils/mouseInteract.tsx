@@ -205,7 +205,7 @@ export class MoveHandler extends MagneticTransitionHandler {
     // this.targetEl.style.top = `${this.curRelY}px`
     // 使用 transform 替代 left 和 top
     const { x, y } = this.getFixedSize(this.curRelX + this.ElStartX, this.curRelY + this.ElStartY)
-    this.curPosition = [x, y]
+    this.curPosition = [x / this.interval.x, y / this.interval.y]
     this.targetEl.style.transform = `translate(${x}px, ${y}px)`
     super._processInnerFunc()
   }
@@ -257,9 +257,10 @@ export class ScaleHandler extends MagneticTransitionHandler {
 }
 
 export class SelectFrameHandler extends MagneticTransitionHandler {
-  curPosition: Point
   curSize: Point
   selectRange: Polygon
+  curStartX: number = 0
+  curStartY: number = 0
   dragable: boolean = false
   constructor(
     el: HTMLElement,
@@ -271,7 +272,6 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     } = {},
   ) {
     super(el, options)
-    this.curPosition = [0, 0]
     this.curSize = [0, 0]
     this.selectRange = [
       [0, 0],
@@ -285,15 +285,22 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     if (!this.dragable) return
     this.targetEl.removeAttribute('style')
     super._start(e)
-    this.targetEl.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`
+    this.curStartX = this.startX
+    this.curStartY = this.startY
+    this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
   }
   _processInnerFunc(): void {
-    const { x: curWidth, y: curHeight } = this.getFixedSize(this.curRelX, this.curRelY)
+    // const { x: curWidth, y: curHeight } = this.getFixedSize(this.curRelX, this.curRelY)
+    const { x: curWidth, y: curHeight } = { x: Math.abs(this.curRelX), y: Math.abs(this.curRelY) }
+    this.curStartX = this.curRelX < 0 ? this.startX - curWidth : this.startX
+    this.curStartY = this.curRelY < 0 ? this.startY - curHeight : this.startY
+    // 通过改变curStartX来实现万向选择。
     this.targetEl.style.width = `${curWidth}px`
     this.targetEl.style.height = `${curHeight}px`
+    this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
     this.selectRange = rectToPolygon({
-      x: this.curPosition[0],
-      y: this.curPosition[1],
+      x: this.curStartX,
+      y: this.curStartY,
       width: curWidth,
       height: curHeight,
     })

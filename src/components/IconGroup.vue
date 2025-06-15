@@ -20,7 +20,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
+
 import { useCounterStore, useElementStore } from '@/stores/counter';
+import { useUserOperaStore, iconGroupClass } from '@/stores/UserOpera';
+
 import { MoveHandler, ScaleHandler } from './utils/mouseInteract.tsx';
 import type { TP_entryConf } from '@/assets/js/type'
 
@@ -31,7 +34,6 @@ import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
 import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
-import { useUserOperaStore } from '@/stores/UserOpera.ts';
 
 const icons = ref([
   { id: 1, name: 'home' },
@@ -61,7 +63,7 @@ const icons = ref([
 
 const elementStore = useElementStore()
 const userOperaStore = useUserOperaStore()
-const iconGroupClass = userOperaStore.iconGroupClass
+// const iconGroupClass = userOperaStore.iconGroupClass
 const { setIntervalXY } = elementStore
 
 const elIconGrp = ref<HTMLElement | null>(null)

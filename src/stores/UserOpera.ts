@@ -26,7 +26,6 @@ export const useUserOperaStore = defineStore('userOpera', () => {
 const getClientVal = (relVal: Point) => {
   const { intervalX, intervalY } = useElementStore()
   const [x, y] = relVal
-  console.log(intervalX, intervalY)
   return [x * intervalX, y * intervalY] as Point
 }
 
