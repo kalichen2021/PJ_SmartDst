@@ -50,6 +50,11 @@ export const createLinkedState = <T extends Record<string, any>>(
     return acc;
   }, {} as Record<string, Ref<any>>);
 
+  // 为所有从动变量创建ref
+  // const drivenRefs = drivenKeys.reduce((acc, k) => {
+  //   acc[k] = ref(config[k]);
+  //   return acc;
+  // }, {} as Record<string, Ref<any>>);
   const state = reactive<{ [K in keyof T]: T[K] }>({} as any);
 
   // 定义主动变量访问器
@@ -68,17 +73,16 @@ export const createLinkedState = <T extends Record<string, any>>(
     const driveFunc = config[k] as (deps: any) => T[typeof k];
     Object.defineProperty(state, k, {
       get: () => {
-        const deps = activeKeys.reduce((acc, key) => {
-          acc[key] = activeRefs[key].value;
-          return acc;
-        }, {} as any);
-        return driveFunc(deps);
+        // 直接访问states及所有变量，包括从动变量。
+        return driveFunc(state);
       },
       set: () => {
         throw new Error(`请通过 update 方法修改主动变量`);
       }
     });
   });
+
+
 
   const update = (newVals: Partial<typeof activeRefs>) => {
     Object.entries(newVals).forEach(([k, v]) => {
@@ -89,7 +93,42 @@ export const createLinkedState = <T extends Record<string, any>>(
     });
   };
 
-  return Object.assign(state, { update });
+  const debug = () => {
+    console.log('当前存储状态：')
+    // 打印主动变量
+    activeKeys.forEach(k => {
+      console.log(`主动变量 ${k}:`, activeRefs[k].value)
+    })
+    // 打印从动变量
+    drivenKeys.forEach(k => {
+      console.log(`从动变量 ${k}:`, (state as any)[k as keyof T])
+    })
+  }
+
+  return Object.assign(state, { update, debug });
+}
+
+
+export const getCookie = (name: string) => {
+  const cookieName = name + "=";
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArray = decodedCookie.split(';');
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i];
+    while (cookie.charAt(0) === ' ') {
+      cookie = cookie.substring(1);
+    }
+    if (cookie.indexOf(cookieName) === 0) {
+      return cookie.substring(cookieName.length, cookie.length);
+    }
+  }
+  return "";
+}
+
+export const setCookie = (name: string, value: string) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + (1 * 24 * 60 * 60 * 1000)); // 过期时间设置为 1 天
+  document.cookie = name + "=" + value + ";expires=" + expires.toUTCString() + ";path=/";
 }
 
 export const getIntervalXY = (): { x: number, y: number } => {

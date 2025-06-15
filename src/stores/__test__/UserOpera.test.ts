@@ -6,3 +6,7 @@ test('useUserOperaStore', async () => {
   // expect(userOperaStore.iconGroupClass.name).toBe("default")
   // // expect(update).toBeDefined()
 })
+
+test("default Env", () => {
+  console.log(isNaN(parseInt("")));
+})

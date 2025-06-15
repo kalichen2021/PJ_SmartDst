@@ -20,7 +20,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
-import { useCounterStore } from '@/stores/counter';
+
+import { useCounterStore, useElementStore } from '@/stores/counter';
+import { useUserOperaStore, iconGroupClass } from '@/stores/UserOpera';
+
 import { MoveHandler, ScaleHandler } from './utils/mouseInteract.tsx';
 import type { TP_entryConf } from '@/assets/js/type'
 
@@ -30,8 +33,7 @@ import IconMore from './icons/IconMore.vue';
 import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
-import { clickSwhToHide, getBoundingRectWithMargin, setIntervalXY, getIntervalXY } from '@/assets/js/utils';
-import { useUserOperaStore } from '@/stores/UserOpera.ts';
+import { clickSwhToHide, getBoundingRectWithMargin, getCookie } from '@/assets/js/utils';
 
 const icons = ref([
   { id: 1, name: '哔哩哔哩', appPath: "C:/ProgramData/Microsoft/Windows/Start Menu/Programs/哔哩哔哩.lnk" },
@@ -61,8 +63,8 @@ const icons = ref([
 
 
 const userOperaStore = useUserOperaStore()
-const iconGroupClass = userOperaStore.iconGroupClass
-// const { setIntervalXY } = elementStore
+// const iconGroupClass = userOperaStore.iconGroupClass
+const { setIntervalXY } = useElementStore()
 
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
@@ -122,12 +124,17 @@ onMounted(() => {
 
   // 控件事件
   const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
-
-  const interval = getIntervalXY()
-  if (interval.x === 0) {
-    setIntervalXY(iconSize.height, iconSize.width)
+  // 读取cookie中的intervalX和intervalY
+  const interval = {
+    x: parseFloat(getCookie("intervalX")),
+    y: parseFloat(getCookie("intervalY")),
+  }
+  if (Number.isNaN(interval.x)) {
+    setIntervalXY({ x: iconSize.width, y: iconSize.height })
     location.reload()
   }
+  // const interval = { x: iconSize.width, y: iconSize.height }
+  // setIntervalXY(interval)
   const _tranStyle = "all .3s"
 
   const storePosition = () => {
