@@ -33,7 +33,7 @@ import IconMore from './icons/IconMore.vue';
 import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
-import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
+import { clickSwhToHide, getBoundingRectWithMargin, getCookie } from '@/assets/js/utils';
 
 const icons = ref([
   { id: 1, name: 'home' },
@@ -124,8 +124,17 @@ onMounted(() => {
 
   // 控件事件
   const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
-  const interval = { x: iconSize.width, y: iconSize.height }
-  setIntervalXY(interval)
+  // 读取cookie中的intervalX和intervalY
+  const interval = {
+    x: parseFloat(getCookie("intervalX")),
+    y: parseFloat(getCookie("intervalY")),
+  }
+  if (Number.isNaN(interval.x)) {
+    setIntervalXY({ x: iconSize.width, y: iconSize.height })
+    location.reload()
+  }
+  // const interval = { x: iconSize.width, y: iconSize.height }
+  // setIntervalXY(interval)
   const _tranStyle = "all .3s"
 
   const storePosition = () => {
