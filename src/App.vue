@@ -18,7 +18,7 @@ import type { AniNumOpt, CanvasItem, Point, Polygon, Rect } from './assets/js/ty
 import { getCssVal, getD, getIntervalXY, getRandom, isPointInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
 
 import SelectFrame from '@/components/widget/SelectFrame.vue'
-import { SelectFrameHandler } from './components/utils/mouseInteract';
+import Test from './components/Test.vue';
 
 const userOperaStore = useUserOperaStore()
 const iconGroupClass = userOperaStore.iconGroupClass
