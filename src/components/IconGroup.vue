@@ -20,8 +20,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
-import { useCounterStore, useElementStore } from '@/stores/counter';
-import { MoveHandler, ScaleHandler } from './utils/IconGroup.tsx';
+import { useCounterStore } from '@/stores/counter';
+import { MoveHandler, ScaleHandler } from './utils/mouseInteract.tsx';
 import type { TP_entryConf } from '@/assets/js/type'
 
 import IconApp from './icons/IconApp.vue';
@@ -30,8 +30,8 @@ import IconMore from './icons/IconMore.vue';
 import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
-import { clickSwhToHide, getBoundingRectWithMargin } from '@/assets/js/utils';
-import { UseUseOperaStore } from '@/stores/UserOpera.ts';
+import { clickSwhToHide, getBoundingRectWithMargin, setIntervalXY, getIntervalXY } from '@/assets/js/utils';
+import { useUserOperaStore } from '@/stores/UserOpera.ts';
 
 const icons = ref([
   { id: 1, name: '哔哩哔哩', appPath: "C:/ProgramData/Microsoft/Windows/Start Menu/Programs/哔哩哔哩.lnk" },
@@ -59,9 +59,10 @@ const icons = ref([
 
 ]);
 
-const elementStore = useElementStore()
-const userOperaStore = UseUseOperaStore()
-const { setIntervalXY } = elementStore
+
+const userOperaStore = useUserOperaStore()
+const iconGroupClass = userOperaStore.iconGroupClass
+// const { setIntervalXY } = elementStore
 
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
@@ -107,7 +108,12 @@ onMounted(() => {
       clickSwhToHide(
         GrpCtnControllerList,
         [elCtnMenu.value!.dom!, elIconGrp.value!],
-        // () => console.log("编辑状态")
+        // () => userOperaStore.ctrlState = "IDLE"
+        () => {
+          // 复原粒子效果
+          // console.log(userOperaStore.initializeParticles)
+          userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]])
+        }
       )
     }
   }]
@@ -116,10 +122,28 @@ onMounted(() => {
 
   // 控件事件
   const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
-  const interval = { x: iconSize.width, y: iconSize.height }
-  setIntervalXY(interval)
+
+  const interval = getIntervalXY()
+  if (interval.x === 0) {
+    setIntervalXY(iconSize.height, iconSize.width)
+    location.reload()
+  }
   const _tranStyle = "all .3s"
+
+  const storePosition = () => {
+    iconGroupClass.iconGroupPosition = [
+      mvHder.curPosition[0],
+      mvHder.curPosition[1]
+    ]
+  }
+  const storeSize = () => {
+    iconGroupClass.iconGroupSize = [
+      sclHder.curSize[0],
+      sclHder.curSize[1]
+    ]
+  }
   const mvHder = new MoveHandler(
+    // #region 应用拖动功能
     elIconGrp.value!,
     {
       interval,
@@ -129,27 +153,25 @@ onMounted(() => {
         userOperaStore.ctrlState = "MOVE"
       },
       _processFnCallback: () => {
-        userOperaStore.iconGroupPosition = [
-          mvHder.curPosition[0],
-          mvHder.curPosition[1]
-        ]
+        // 写入store
+        storePosition()
         // 绘制canvas网格
         userOperaStore.canvasAnimate(mvHder.curPosition)
       },
       _stopFnCallback: () => {
-        userOperaStore.iconGroupPosition = [
-          mvHder.curPosition[0],
-          mvHder.curPosition[1]
-        ]
+        // 写入store
+        storePosition()
         userOperaStore.canvasAnimate(mvHder.curPosition)
         elIconGrp.value!.style.removeProperty('transition')
         userOperaStore.ctrlState = "IDLE"
         console.log("stop")
       }
     }
+    // #endregion
   );
 
   const sclHder = new ScaleHandler(
+    // #region 应用缩放功能
     elGridCtn.value!,
     {
       interval,
@@ -160,10 +182,8 @@ onMounted(() => {
         userOperaStore.ctrlState = "SCALE"
       },
       _processFnCallback: () => {
-        userOperaStore.icnoGroupSize = [
-          sclHder.curSize[0],
-          sclHder.curSize[1]
-        ]
+        // 写入store
+        storeSize()
         userOperaStore.canvasAnimate(mvHder.curPosition)
       },
       _stopFnCallback: () => {
@@ -173,6 +193,7 @@ onMounted(() => {
         userOperaStore.ctrlState = "IDLE"
       }
     }
+    //#endregion
   );
 
   // 应用控件功能

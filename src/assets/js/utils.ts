@@ -1,4 +1,4 @@
-import { type Ref, ref, unref } from "vue";
+import { type Reactive, reactive, type Ref, ref, toRef, triggerRef, unref, type UnwrapRef } from "vue";
 import type { Circle, itemOrArray, Point, Polygon, Rect } from "./type";
 
 
@@ -12,6 +12,111 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
   return [i];
 }
 
+/**
+ * 创建联动响应式状态对象
+ * @template T 状态对象类型，应包含字符串键和任意值类型
+ * @param config 配置对象，包含两种类型的属性：
+ *               - 主动变量：直接赋值的基础值
+ *               - 从动变量：接收依赖参数并返回计算值的函数
+ * 
+ * @returns 返回包含以下内容的对象：
+ *          - 所有状态的响应式访问器
+ *          - update方法：用于批量更新主动变量
+ * 
+ * @example
+ * const state = createLinkedState({
+ *   width: 100,
+ *   height: 50,
+ *   area: ({ width, height }) => width * height,
+ *   ratio: ({ width, height }) => width / height
+ * });
+ * 
+ * state.update({ width: 200, height: 100 });
+ * // 也可以直接修改
+ * console.log(state.area);  // 20000
+ * console.log(state.ratio); // 2
+ */
+export const createLinkedState = <T extends Record<string, any>>(
+  config: {
+    [K in keyof T]: T[K] | ((deps: Omit<T, K>) => T[K])
+  }
+) => {
+  const activeKeys = Object.keys(config).filter(k => typeof config[k] !== 'function');
+  const drivenKeys = Object.keys(config).filter(k => typeof config[k] === 'function');
+
+  // 为所有主动变量创建ref
+  const activeRefs = activeKeys.reduce((acc, k) => {
+    acc[k] = ref(config[k]);
+    return acc;
+  }, {} as Record<string, Ref<any>>);
+
+  const state = reactive<{ [K in keyof T]: T[K] }>({} as any);
+
+  // 定义主动变量访问器
+  activeKeys.forEach(k => {
+    Object.defineProperty(state, k, {
+      get: () => activeRefs[k].value,
+      set: (val) => {
+        activeRefs[k].value = val;
+        triggerRef(activeRefs[k]);
+      }
+    });
+  });
+
+  // 定义从动变量访问器
+  drivenKeys.forEach(k => {
+    const driveFunc = config[k] as (deps: any) => T[typeof k];
+    Object.defineProperty(state, k, {
+      get: () => {
+        const deps = activeKeys.reduce((acc, key) => {
+          acc[key] = activeRefs[key].value;
+          return acc;
+        }, {} as any);
+        return driveFunc(deps);
+      },
+      set: () => {
+        throw new Error(`请通过 update 方法修改主动变量`);
+      }
+    });
+  });
+
+  const update = (newVals: Partial<typeof activeRefs>) => {
+    Object.entries(newVals).forEach(([k, v]) => {
+      if (activeRefs[k]) {
+        activeRefs[k].value = v;
+        triggerRef(activeRefs[k]);
+      }
+    });
+  };
+
+  return Object.assign(state, { update });
+}
+
+export const getIntervalXY = (): { x: number, y: number } => {
+  // 从cookie中获取interval值
+  const parseCookie = (name: string): number => {
+    const value = document.cookie
+      .split('; ')
+      .find(row => row.startsWith(`${name}=`))
+      ?.split('=')[1];
+    return value ? parseInt(value) : 0;
+  };
+
+  return {
+    x: parseCookie('intervalX'),
+    y: parseCookie('intervalY')
+  };
+}
+
+export const setIntervalXY = (x: number, y: number) => {
+  // 设置interval值到cookie中
+  const setCookie = (name: string, value: number, days: number) => {
+    const expires = new Date(Date.now() + days * 864e+5).toUTCString();
+    document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+  }
+  setCookie('intervalX', x, 365);
+  setCookie('intervalY', y, 365);
+}
 
 //#region  Geometry
 export const getD = (axis0: Point, axis1?: Point) => {
@@ -33,7 +138,7 @@ export const rectToPolygon = (rect: Rect): Polygon => {
   ];
 }
 
-export const isInPolygon = (
+export const isPointInPolygon = (
   point: Point,
   polygon: Polygon,
   precision: number = 0,
@@ -56,6 +161,14 @@ export const isInPolygon = (
 
   return isInside;
 };
+
+export const isPolygonInPolygon = (
+  polygon1: Polygon,
+  polygon2: Polygon,
+  precision: number = 0,
+) => {
+  return polygon1.every((point) => isPointInPolygon(point, polygon2, precision));
+}
 
 export const isInCircle = (
   circle: Circle,

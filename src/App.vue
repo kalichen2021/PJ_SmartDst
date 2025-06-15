@@ -3,6 +3,7 @@
   <canvas id="back-media"></canvas>
   <RouterView />
   <Test />
+  <select-frame />
 
 </template>
 
@@ -10,20 +11,22 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import { onMounted, watch, ref, onUnmounted } from 'vue';
-import { useElementStore } from '@/stores/counter';
+import { useUserOperaStore } from '@/stores/UserOpera';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
 import type { AniNumOpt, CanvasItem, Point, Polygon, Rect } from './assets/js/type'
-import { getCssVal, getD, getRandom, isInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
-import { UseUseOperaStore } from './stores/UserOpera';
+import { getCssVal, getD, getIntervalXY, getRandom, isPointInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
 
-import Test from '@/components/Test.vue';
+import SelectFrame from '@/components/widget/SelectFrame.vue'
+import { SelectFrameHandler } from './components/utils/mouseInteract';
 
-const elementStore = useElementStore()
-const userOperaStore = UseUseOperaStore()
+const userOperaStore = useUserOperaStore()
+const iconGroupClass = userOperaStore.iconGroupClass
 
 const particles: Array<Particle>[] = []
 let requestId: number | null;
+
+const interval = getIntervalXY()
 
 
 
@@ -48,57 +51,85 @@ const initializeParticles = (rows: number, cols: number, intervalX: number, inte
 const animateParticle = (p: Particle, squere: Polygon) => {
   // if (!p.needsUpdate) return;
   p.animate({
-    radius: isInPolygon([p.x, p.y], squere) ? 20 : 8,
-    duration: isInPolygon([p.x, p.y], squere) ? 100 : 400
+    radius: isPointInPolygon([p.x, p.y], squere) ? 20 : 8,
+    duration: isPointInPolygon([p.x, p.y], squere) ? 100 : 400
   });
   // p.needsUpdate = false;
 };
 
-const canvasAnimate = (curPosition: Point) => {
-  if (userOperaStore.ctrlState === "IDLE") {
-    cancelAnimationFrame(requestId ?? 999);
-    requestId = null;
-    return;
-  }
-  const { intervalX, intervalY } = elementStore
-  const { icnoGroupSize } = userOperaStore
-  const squere: Polygon = rectToPolygon({
-    x: curPosition[0] + intervalX * .5,
-    y: curPosition[1] + intervalY * .5,
-    width: intervalX * icnoGroupSize[0],
-    height: intervalY * icnoGroupSize[1]
-  });
-
-  // 修改canvasAnimate中的遍历逻辑
+const animateAllParticles = (squere: Polygon) => {
   for (let i = 0; i < particles.length; i++) {
     const row = particles[i];
     for (let j = 0; j < row.length; j++) {
       animateParticle(row[j], squere);
     }
   }
-};
+}
 
-watch(
-  () => elementStore.intervalX,
-  (c, p) => {
-    const backMedia = new canvasOperator();
-    const { intervalX, intervalY } = elementStore
-    backMedia.init();
 
-    const rows = Math.floor(backMedia.canvas.width / elementStore.intervalX);
-    const cols = Math.floor(backMedia.canvas.height / elementStore.intervalY);
-    console.log(intervalX, intervalY)
+const canvasAnimate = (() => {
+  // 闭包缓存优化
+  let requestId: number | null = null;
+  let storeCache = {
+    intervalX: 0,
+    intervalY: 0,
+    iconGroupSize: [0, 0] as Point
+  };
+  const squerePool = new Map<string, Polygon>(); // 对象池优化
 
-    particles.push(...initializeParticles(rows, cols, intervalX, intervalY));
-    backMedia.addItem<Particle>(particles);
-    backMedia.process();
-  }
-);
+  return (curPosition: Point) => {
+    if (userOperaStore.ctrlState === "IDLE") {
+      cancelAnimationFrame(requestId ?? 999);
+      requestId = null;
+      return;
+    }
+
+    // 增量更新store缓存
+    if (storeCache.intervalX !== interval.x ||
+      storeCache.intervalY !== interval.y) {
+      storeCache.intervalX = interval.x;
+      storeCache.intervalY = interval.y;
+    }
+    if (storeCache.iconGroupSize !== iconGroupClass.iconGroupSize) {
+      storeCache.iconGroupSize = [...iconGroupClass.iconGroupSize] as Point;
+    }
+
+    // 对象池检索
+    const poolKey = `${curPosition[0]},${curPosition[1]}`;
+    let squere = squerePool.get(poolKey);
+
+    if (!squere) {
+      squere = rectToPolygon({
+        x: curPosition[0] + storeCache.intervalX * .5,
+        y: curPosition[1] + storeCache.intervalY * .5,
+        width: storeCache.intervalX * storeCache.iconGroupSize[0],
+        height: storeCache.intervalY * storeCache.iconGroupSize[1]
+      });
+      squerePool.set(poolKey, squere);
+    }
+    animateAllParticles(squere);
+
+  };
+})();
+
 
 
 onMounted(() => {
+  const interval = getIntervalXY()
+  if (interval.x === 0) {
+    return;
+  }
+  const backMedia = new canvasOperator();
+  backMedia.init()
+  const rows = Math.floor(backMedia.canvas.width / interval.x);
+  const cols = Math.floor(backMedia.canvas.height / interval.y);
+
+
+  particles.push(...initializeParticles(rows, cols, interval.x, interval.y));
+  backMedia.addItem<Particle>(particles);
+  backMedia.process();
   userOperaStore.canvasAnimate = canvasAnimate;
-  userOperaStore.initializeParticles = initializeParticles;
+  userOperaStore.initializeParticles = animateAllParticles
   // document.addEventListener("mousemove", handleMouseMove);
 });
 

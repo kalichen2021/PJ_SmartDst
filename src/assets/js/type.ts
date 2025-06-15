@@ -27,14 +27,12 @@ export type SetNumAttrOption<T> = T & {
   easing?: (t: number) => number;
 }
 
-export interface _SetNumAttrOption<T> {
-  attr: keyof T
-  value: number
-  duration: number
-  dT: number
-  easing?: (t: number) => number
-
-}
+export type iconGroupClass = Array<{
+  name: string,
+  iconGroupPosition: Point,
+  iconGroupSize: Point,
+  rangePolygon: Polygon,
+}>
 
 export interface CanvasItem {
   x: number
