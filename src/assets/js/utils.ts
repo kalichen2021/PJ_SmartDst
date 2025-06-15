@@ -26,6 +26,11 @@ export const createLinkedState = <T extends Record<string, any>>(
     return acc;
   }, {} as Record<string, Ref<any>>);
 
+  // 为所有从动变量创建ref
+  // const drivenRefs = drivenKeys.reduce((acc, k) => {
+  //   acc[k] = ref(config[k]);
+  //   return acc;
+  // }, {} as Record<string, Ref<any>>);
   const state = reactive<{ [K in keyof T]: T[K] }>({} as any);
 
   // 定义主动变量访问器
@@ -44,17 +49,16 @@ export const createLinkedState = <T extends Record<string, any>>(
     const driveFunc = config[k] as (deps: any) => T[typeof k];
     Object.defineProperty(state, k, {
       get: () => {
-        const deps = activeKeys.reduce((acc, key) => {
-          acc[key] = activeRefs[key].value;
-          return acc;
-        }, {} as any);
-        return driveFunc(deps);
+        // 直接访问states及所有变量，包括从动变量。
+        return driveFunc(state);
       },
       set: () => {
         throw new Error(`请通过 update 方法修改主动变量`);
       }
     });
   });
+
+
 
   const update = (newVals: Partial<typeof activeRefs>) => {
     Object.entries(newVals).forEach(([k, v]) => {
@@ -65,7 +69,19 @@ export const createLinkedState = <T extends Record<string, any>>(
     });
   };
 
-  return Object.assign(state, { update });
+  const debug = () => {
+    console.log('当前存储状态：')
+    // 打印主动变量
+    activeKeys.forEach(k => {
+      console.log(`主动变量 ${k}:`, activeRefs[k].value)
+    })
+    // 打印从动变量
+    drivenKeys.forEach(k => {
+      console.log(`从动变量 ${k}:`, (state as any)[k as keyof T])
+    })
+  }
+
+  return Object.assign(state, { update, debug });
 }
 
 //#region  Geometry
