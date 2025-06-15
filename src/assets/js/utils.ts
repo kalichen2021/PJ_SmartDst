@@ -125,37 +125,11 @@ export const getCookie = (name: string) => {
   return "";
 }
 
-export const setCookie = (name: string, value: string) => {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + (1 * 24 * 60 * 60 * 1000)); // 过期时间设置为 1 天
-  document.cookie = name + "=" + value + ";expires=" + expires.toUTCString() + ";path=/";
+export const setCookie = (name: string, value: string | number, days: number = 365) => {
+  const expires = new Date(Date.now() + days * 864e+5).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/`;
 }
 
-export const getIntervalXY = (): { x: number, y: number } => {
-  // 从cookie中获取interval值
-  const parseCookie = (name: string): number => {
-    const value = document.cookie
-      .split('; ')
-      .find(row => row.startsWith(`${name}=`))
-      ?.split('=')[1];
-    return value ? parseInt(value) : 0;
-  };
-
-  return {
-    x: parseCookie('intervalX'),
-    y: parseCookie('intervalY')
-  };
-}
-
-export const setIntervalXY = (x: number, y: number) => {
-  // 设置interval值到cookie中
-  const setCookie = (name: string, value: number, days: number) => {
-    const expires = new Date(Date.now() + days * 864e+5).toUTCString();
-    document.cookie = `${name}=${value}; expires=${expires}; path=/`;
-  }
-  setCookie('intervalX', x, 365);
-  setCookie('intervalY', y, 365);
-}
 
 //#region  Geometry
 export const getD = (axis0: Point, axis1?: Point) => {

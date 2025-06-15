@@ -135,6 +135,7 @@ export class Particle extends canvasInfo {
   dr: number;
   isAni: boolean;
   _originAttr: Particle | null;
+  interval: { x: number, y: number }
   public needUpdate: boolean = false;
 
   constructor({
@@ -146,7 +147,12 @@ export class Particle extends canvasInfo {
     dy = 0,
     dr = 0,
     isAni = false,
-  }: ParticleNumAttr & { color: string; isAni?: boolean }) {
+    interval = { x: 0, y: 0 },
+  }: ParticleNumAttr & {
+    color: string;
+    isAni?: boolean;
+    interval: { x: number, y: number }
+  }) {
     super();
     this.x = x ?? Math.random() * this.canvas.width;
     this.y = y ?? Math.random() * this.canvas.height;
@@ -157,6 +163,7 @@ export class Particle extends canvasInfo {
     this.dr = dr;
     this.isAni = isAni;
     this._originAttr = null;
+    this.interval = interval
   }
 
   private getOriginAttr() {
@@ -169,7 +176,7 @@ export class Particle extends canvasInfo {
    */
   draw() {
     this.ctx.beginPath();
-    this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    this.ctx.arc(this.x * this.interval.x, this.y * this.interval.y, this.radius, 0, Math.PI * 2);
     this.ctx.fillStyle = this.color;
     this.ctx.fill();
     this.ctx.closePath();

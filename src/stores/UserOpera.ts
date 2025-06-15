@@ -2,7 +2,7 @@ import type { Point, Polygon } from "@/assets/js/type";
 import { createLinkedState, getCookie, rectToPolygon } from "@/assets/js/utils";
 import { defineStore } from "pinia";
 import { computed, reactive, ref, type Ref } from "vue";
-import { useElementStore } from "./counter";
+import { getIntervalXY } from "@/components/utils/storeVal";
 
 
 
@@ -24,10 +24,7 @@ export const useUserOperaStore = defineStore('userOpera', () => {
 })
 
 const getClientVal = (relVal: Point) => {
-  const interval = {
-    x: parseFloat(getCookie("intervalX") || "1"),
-    y: parseFloat(getCookie("intervalY") || "1"),
-  }
+  const interval = getIntervalXY()
   const [x, y] = relVal
   return [x * interval.x, y * interval.y] as Point
 }

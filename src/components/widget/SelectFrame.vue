@@ -11,13 +11,11 @@ import { isPolygonInPolygon } from '@/assets/js/utils';
 import type { Polygon } from '@/assets/js/type';
 
 import { useUserOperaStore, iconGroupClass } from '@/stores/UserOpera';
-import { useElementStore } from '@/stores/counter';
 import { watch } from 'vue';
 
 const elSelectFrame = ref<HTMLElement | null>(null)
 
 const userOperaStore = useUserOperaStore()
-const elementStore = useElementStore()
 
 
 onMounted(() => {
