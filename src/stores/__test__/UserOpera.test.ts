@@ -3,7 +3,7 @@ import { useUserOperaStore } from '../UserOpera'
 
 test('useUserOperaStore', async () => {
   // const userOperaStore = useUserOperaStore()
-  // expect(userOperaStore.iconGroupClass.name).toBe("default")
+  // expect(userOperaStore.appGroupClass.name).toBe("default")
   // // expect(update).toBeDefined()
 })
 

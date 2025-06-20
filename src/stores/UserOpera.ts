@@ -8,18 +8,18 @@ import { getIntervalXY } from "@/components/utils/storeVal";
 
 export const useUserOperaStore = defineStore('userOpera', () => {
   const ctrlState: Ref<"MOVE" | "SCALE" | "IDLE" | "EDIT"> = ref("IDLE")
-  // const iconGroupPosition: Ref<Point> = ref([0, 0])
-  // const iconGroupSize: Ref<Point> = ref([3, 3])
+  // const appGroupPosition: Ref<Point> = ref([0, 0])
+  // const appGroupSize: Ref<Point> = ref([3, 3])
   const canvasAnimate: Ref<(curPosition: Point) => void> = ref(() => { })
   const initializeParticles: Ref<Function> = ref(() => { })
 
 
   return {
     ctrlState,
-    // iconGroupPosition,
-    // iconGroupSize, 
+    // appGroupPosition,
+    // appGroupSize, 
     canvasAnimate, initializeParticles,
-    // getIconGroupPolygon
+    // getAppGroupPolygon
   }
 })
 
@@ -29,15 +29,15 @@ const getClientVal = (relVal: Point) => {
   return [x * interval.x, y * interval.y] as Point
 }
 
-export const iconGroupClass = createLinkedState({
+export const appGroupClass = createLinkedState({
   name: "default",
-  iconGroupPosition: [0, 0] as Point,
-  iconGroupSize: [3, 3] as Point,
-  iconGroupClientPosition: ({ iconGroupPosition }): Point => getClientVal(iconGroupPosition),
-  iconGroupClientSize: ({ iconGroupSize }): Point => getClientVal(iconGroupSize),
-  iconGroupPolygon: ({ iconGroupClientPosition, iconGroupClientSize }) => {
-    const _position = iconGroupClientPosition as Point;
-    const _size = iconGroupClientSize as Point;
+  appGroupPosition: [0, 0] as Point,
+  appGroupSize: [3, 3] as Point,
+  appGroupClientPosition: ({ appGroupPosition }): Point => getClientVal(appGroupPosition),
+  appGroupClientSize: ({ appGroupSize }): Point => getClientVal(appGroupSize),
+  appGroupPolygon: ({ appGroupClientPosition, appGroupClientSize }) => {
+    const _position = appGroupClientPosition as Point;
+    const _size = appGroupClientSize as Point;
     return rectToPolygon({
       x: _position[0],
       y: _position[1],

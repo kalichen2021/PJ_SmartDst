@@ -2,24 +2,27 @@
 
   <canvas id="back-media"></canvas>
   <RouterView />
-  <Test />
+  <!-- <Test /> -->
   <select-frame />
+  <opera-box />
 
 </template>
 
 
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import { onMounted, watch, ref, onUnmounted } from 'vue';
-import { useUserOperaStore, iconGroupClass } from '@/stores/UserOpera';
+import { RouterView } from 'vue-router'
+import { onMounted, onUnmounted } from 'vue';
+import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
-import type { AniNumOpt, CanvasItem, Point, Polygon, Rect } from './assets/js/type'
-import { getCookie, getCssVal, getD, getRandom, isPointInPolygon, rectToPolygon, throttle } from "./assets/js/utils"
+import type { Point, Polygon } from './assets/js/type'
+import { isPointInPolygon, rectToPolygon } from "./assets/js/utils"
 
 
 import SelectFrame from '@/components/widget/SelectFrame.vue'
 import Test from './components/Test.vue';
+import OperaBox from '@/components/OperaBox.vue';
+
 import { getIntervalXY } from '@/components/utils/storeVal';
 
 const interval = getIntervalXY()
@@ -66,14 +69,13 @@ const animateAllParticles = (squere: Polygon) => {
   }
 }
 
-
 const canvasAnimate = (() => {
   // 闭包缓存优化
   let requestId: number | null = null;
   let storeCache = {
     intervalX: 0,
     intervalY: 0,
-    iconGroupSize: [0, 0] as Point
+    appGroupSize: [0, 0] as Point
   };
   const squerePool = new Map<string, Polygon>(); // 对象池优化
 
@@ -92,24 +94,24 @@ const canvasAnimate = (() => {
     }
 
     // 深度比较数组内容
-    if (JSON.stringify(storeCache.iconGroupSize) !== JSON.stringify(iconGroupClass.iconGroupSize)) {
+    if (JSON.stringify(storeCache.appGroupSize) !== JSON.stringify(appGroupClass.appGroupSize)) {
       // console.log('尺寸变更:',
-      //   JSON.parse(JSON.stringify(storeCache.iconGroupSize)),
-      //   JSON.parse(JSON.stringify(iconGroupClass.iconGroupSize))
+      //   JSON.parse(JSON.stringify(storeCache.appGroupSize)),
+      //   JSON.parse(JSON.stringify(appGroupClass.appGroupSize))
       // );
-      storeCache.iconGroupSize = [...iconGroupClass.iconGroupSize] as Point;
+      storeCache.appGroupSize = [...appGroupClass.appGroupSize] as Point;
     }
 
     // 对象池检索
-    const poolKey = `${curPosition[0]},${curPosition[1]},${storeCache.iconGroupSize[0]},${storeCache.iconGroupSize[1]}`;
+    const poolKey = `${curPosition[0]},${curPosition[1]},${storeCache.appGroupSize[0]},${storeCache.appGroupSize[1]}`;
     let squere = squerePool.get(poolKey);
 
     if (!squere) {
       squere = rectToPolygon({
         x: curPosition[0] + .5,
         y: curPosition[1] + .5,
-        width: storeCache.iconGroupSize[0],
-        height: storeCache.iconGroupSize[1]
+        width: storeCache.appGroupSize[0],
+        height: storeCache.appGroupSize[1]
       });
       squerePool.set(poolKey, squere);
     }

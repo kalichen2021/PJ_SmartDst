@@ -10,7 +10,7 @@ import { SelectFrameHandler } from '../utils/mouseInteract';
 import { isPolygonInPolygon } from '@/assets/js/utils';
 import type { Polygon } from '@/assets/js/type';
 
-import { useUserOperaStore, iconGroupClass } from '@/stores/UserOpera';
+import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
 import { watch } from 'vue';
 
 const elSelectFrame = ref<HTMLElement | null>(null)
@@ -29,8 +29,8 @@ onMounted(() => {
 
       },
       _stopFnCallback() {
-        // console.log(iconGroupClass.debug())
-        if (isPolygonInPolygon(iconGroupClass.iconGroupPolygon as Polygon, slfHder.selectRange)) {
+        // console.log(appGroupClass.debug())
+        if (isPolygonInPolygon(appGroupClass.appGroupPolygon as Polygon, slfHder.selectRange)) {
           console.log("在范围内")
         }
       }

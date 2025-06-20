@@ -21,10 +21,10 @@
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue';
 
-import { useUserOperaStore, iconGroupClass } from '@/stores/UserOpera';
+import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
 
 import { MoveHandler, ScaleHandler } from './utils/mouseInteract.tsx';
-import type { TP_entryConf } from '@/assets/js/type'
+import type { Point, TP_entryConf } from '@/assets/js/type'
 
 import IconApp from './icons/IconApp.vue';
 import IconBar from './icons/IconBar.vue';
@@ -32,8 +32,9 @@ import IconMore from './icons/IconMore.vue';
 import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
-import { clickSwhToHide, getBoundingRectWithMargin, getCookie } from '@/assets/js/utils';
-import { getIntervalXY, setIntervalXY } from './utils/storeVal';
+import { clickSwhToHide, createLinkedState, getBoundingRectWithMargin, getCookie, rectToPolygon } from '@/assets/js/utils';
+import { getIntervalXY, setIntervalXY } from './utils/storeVal.ts';
+import { onUnmounted } from 'vue';
 
 const icons = ref([
   { id: 1, name: '哔哩哔哩', appPath: "C:/ProgramData/Microsoft/Windows/Start Menu/Programs/哔哩哔哩.lnk" },
@@ -63,7 +64,7 @@ const icons = ref([
 
 
 const userOperaStore = useUserOperaStore()
-// const iconGroupClass = userOperaStore.iconGroupClass
+// const appGroupClass = userOperaStore.appGroupClass
 
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
@@ -75,8 +76,34 @@ const entriesConf = ref<[TP_entryConf]>()
 // tips: InstanceType 实例类型
 const elCtnMenu = ref<InstanceType<typeof CtnMenu> | null>(null)
 
+const getClientVal = (relVal: Point) => {
+  const interval = getIntervalXY()
+  const [x, y] = relVal
+  return [x * interval.x, y * interval.y] as Point
+}
 
+const expose = createLinkedState({
+  name: "default",
+  appGroupPosition: [0, 0] as Point,
+  appGroupSize: [3, 3] as Point,
+  appGroupClientPosition: ({ appGroupPosition }): Point => getClientVal(appGroupPosition),
+  appGroupClientSize: ({ appGroupSize }): Point => getClientVal(appGroupSize),
+  appGroupPolygon: ({ appGroupClientPosition, appGroupClientSize }) => {
+    const _position = appGroupClientPosition as Point;
+    const _size = appGroupClientSize as Point;
+    return rectToPolygon({
+      x: _position[0],
+      y: _position[1],
+      width: _size[0],
+      height: _size[1]
+    })
+  }
+})
+
+defineExpose(expose)
+const emit = defineEmits(['created', 'destroyed']);
 onMounted(() => {
+  emit('created', expose);
   // 获取控制器元素
   const GrpCtnControllerList = Array.from(
     elIconGrpCtn.value!.querySelectorAll(".controller")
@@ -129,22 +156,29 @@ onMounted(() => {
     setIntervalXY({ x: iconSize.width, y: iconSize.height })
     location.reload()
   }
-  // const interval = { x: iconSize.width, y: iconSize.height }
-  // setIntervalXY(interval)
-  const _tranStyle = "all .3s"
+
 
   const storePosition = () => {
-    iconGroupClass.iconGroupPosition = [
+    expose.appGroupPosition = [
+      mvHder.curPosition[0],
+      mvHder.curPosition[1]
+    ]
+    expose.appGroupPosition = [
       mvHder.curPosition[0],
       mvHder.curPosition[1]
     ]
   }
   const storeSize = () => {
-    iconGroupClass.iconGroupSize = [
+    expose.appGroupSize = [
+      sclHder.curSize[0],
+      sclHder.curSize[1]
+    ]
+    expose.appGroupSize = [
       sclHder.curSize[0],
       sclHder.curSize[1]
     ]
   }
+  const _tranStyle = "all .3s"
   const mvHder = new MoveHandler(
     // #region 应用拖动功能
     elIconGrp.value!,
@@ -203,6 +237,10 @@ onMounted(() => {
   elGrabBar.value!.onmousedown = (e) => mvHder.apply(e);
   elScaler.value!.onmousedown = (e) => sclHder.apply(e);
 
+})
+
+onUnmounted(() => {
+  emit('destroyed', expose.name);
 })
 </script>
 

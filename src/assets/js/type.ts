@@ -27,10 +27,10 @@ export type SetNumAttrOption<T> = T & {
   easing?: (t: number) => number;
 }
 
-// export type iconGroupClass = Array<{
+// export type appGroupClass = Array<{
 //   name: string,
-//   iconGroupPosition: Point,
-//   iconGroupSize: Point,
+//   appGroupPosition: Point,
+//   appGroupSize: Point,
 //   rangePolygon: Polygon,
 // }>
 

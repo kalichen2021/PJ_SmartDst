@@ -55,7 +55,7 @@ export class DragHandler {
     document.addEventListener('mouseup', this._stop.bind(this))
     this._processInnerFunc()
 
-    console.log('Drag started')
+    // console.log('Drag started')
   }
 
   _process(e: MouseEvent) {
@@ -100,7 +100,7 @@ export class DragHandler {
     this.startX = 0
     this.startY = 0
 
-    console.log('Drag stopped')
+    // console.log('Drag stopped')
   }
 }
 

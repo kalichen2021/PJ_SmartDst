@@ -23,15 +23,15 @@ test('autoSetItem', async () => {
 test('autoSetItem1', async () => {
   // 调整属性声明顺序
   const a = createLinkedState({
-    iconGroupPosition: [0, 0],
-    iconGroupSize: [3, 3],
-    _getIconGroupWidth: ({ iconGroupSize }) => iconGroupSize[0],
-    _getGet: ({ _getIconGroupWidth }) => _getIconGroupWidth, // 移到依赖项之后
-    iconGroupPolygon: ({ iconGroupPosition, iconGroupSize }) => rectToPolygon({
-      x: iconGroupPosition[0],
-      y: iconGroupPosition[1],
-      width: iconGroupSize[0],
-      height: iconGroupSize[1]
+    appGroupPosition: [0, 0],
+    appGroupSize: [3, 3],
+    _getAppGroupWidth: ({ appGroupSize }) => appGroupSize[0],
+    _getGet: ({ _getAppGroupWidth }) => _getAppGroupWidth, // 移到依赖项之后
+    appGroupPolygon: ({ appGroupPosition, appGroupSize }) => rectToPolygon({
+      x: appGroupPosition[0],
+      y: appGroupPosition[1],
+      width: appGroupSize[0],
+      height: appGroupSize[1]
     })
   })
 
