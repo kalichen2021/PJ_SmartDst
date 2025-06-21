@@ -22,8 +22,9 @@
 import { ref, onMounted, watchEffect } from 'vue';
 
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
+import { useAppGroupStore } from '@/stores/AppGroupStore';
 
-import { MoveHandler, ScaleHandler } from './utils/mouseInteract.tsx';
+import { MoveHandler, ScaleHandler } from './utils/mouseInteract.ts';
 import type { Point, TP_entryConf } from '@/assets/js/type'
 
 import IconApp from './icons/IconApp.vue';
@@ -33,7 +34,7 @@ import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
 import { clickSwhToHide, createLinkedState, getBoundingRectWithMargin, getCookie, rectToPolygon } from '@/assets/js/utils';
-import { getIntervalXY, setIntervalXY } from './utils/storeVal.ts';
+import { getIntervalXY, setIntervalXY } from './utils/storeInterval.ts';
 import { onUnmounted } from 'vue';
 
 const icons = ref([
@@ -64,6 +65,7 @@ const icons = ref([
 
 
 const userOperaStore = useUserOperaStore()
+const AppGroupStore = useAppGroupStore();
 // const appGroupClass = userOperaStore.appGroupClass
 
 const elIconGrp = ref<HTMLElement | null>(null)
@@ -83,7 +85,7 @@ const getClientVal = (relVal: Point) => {
 }
 
 const expose = createLinkedState({
-  name: "default",
+  name: Date.now().toString(),
   appGroupPosition: [0, 0] as Point,
   appGroupSize: [3, 3] as Point,
   appGroupClientPosition: ({ appGroupPosition }): Point => getClientVal(appGroupPosition),
@@ -102,6 +104,7 @@ const expose = createLinkedState({
 
 defineExpose(expose)
 const emit = defineEmits(['created', 'destroyed']);
+
 onMounted(() => {
   emit('created', expose);
   // 获取控制器元素
@@ -109,8 +112,8 @@ onMounted(() => {
     elIconGrpCtn.value!.querySelectorAll(".controller")
   ) as HTMLElement[];
 
+  // 允许拖动控件工作
   const enableCtrlerWork = () => {
-    // 允许拖动控件工作
     elGrabBar.value!.draggable = true;
     GrpCtnControllerList.forEach((el) => el!.style.display = "block")
   }
@@ -188,6 +191,7 @@ onMounted(() => {
         // console.log("start")
         elIconGrp.value!.style.transition = _tranStyle
         userOperaStore.ctrlState = "MOVE"
+        console.log(elIconGrp.value!)
       },
       _processFnCallback: () => {
         // 写入store
@@ -232,6 +236,10 @@ onMounted(() => {
     }
     //#endregion
   );
+
+  // 首次更新
+  mvHder._processFnCallback()
+  sclHder._processFnCallback()
 
   // 应用控件功能
   elGrabBar.value!.onmousedown = (e) => mvHder.apply(e);

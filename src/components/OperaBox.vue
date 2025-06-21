@@ -14,11 +14,11 @@ import AppGroup from './AppGroup.vue';
 
 const elBtnAdd = ref<HTMLDivElement>()
 
-const addGroup = () => {
-
-}
+const emit = defineEmits(['click'])
 onMounted(() => {
-
+  elBtnAdd.value?.addEventListener('click', () => {
+    emit('click')
+  })
 })
 </script>
 

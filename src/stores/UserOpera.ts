@@ -2,7 +2,7 @@ import type { Point, Polygon } from "@/assets/js/type";
 import { createLinkedState, getCookie, rectToPolygon } from "@/assets/js/utils";
 import { defineStore } from "pinia";
 import { computed, reactive, ref, type Ref } from "vue";
-import { getIntervalXY } from "@/components/utils/storeVal";
+import { getIntervalXY } from "@/components/utils/storeInterval";
 
 
 

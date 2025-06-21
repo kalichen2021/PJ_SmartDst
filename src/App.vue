@@ -4,7 +4,6 @@
   <RouterView />
   <!-- <Test /> -->
   <select-frame />
-  <opera-box />
 
 </template>
 
@@ -23,7 +22,7 @@ import SelectFrame from '@/components/widget/SelectFrame.vue'
 import Test from './components/Test.vue';
 import OperaBox from '@/components/OperaBox.vue';
 
-import { getIntervalXY } from '@/components/utils/storeVal';
+import { getIntervalXY } from '@/components/utils/storeInterval';
 
 const interval = getIntervalXY()
 const userOperaStore = useUserOperaStore()

@@ -39,7 +39,8 @@ export const toArray = <T>(i: itemOrArray<T>): T[] => {
 export const createLinkedState = <T extends Record<string, any>>(
   config: {
     [K in keyof T]: T[K] | ((deps: Omit<T, K>) => T[K])
-  }
+  },
+  callBack: (state: any) => void = () => null
 ) => {
   const activeKeys = Object.keys(config).filter(k => typeof config[k] !== 'function');
   const drivenKeys = Object.keys(config).filter(k => typeof config[k] === 'function');
@@ -51,10 +52,6 @@ export const createLinkedState = <T extends Record<string, any>>(
   }, {} as Record<string, Ref<any>>);
 
   // 为所有从动变量创建ref
-  // const drivenRefs = drivenKeys.reduce((acc, k) => {
-  //   acc[k] = ref(config[k]);
-  //   return acc;
-  // }, {} as Record<string, Ref<any>>);
   const state = reactive<{ [K in keyof T]: T[K] }>({} as any);
 
   // 定义主动变量访问器
@@ -82,8 +79,6 @@ export const createLinkedState = <T extends Record<string, any>>(
     });
   });
 
-
-
   const update = (newVals: Partial<typeof activeRefs>) => {
     Object.entries(newVals).forEach(([k, v]) => {
       if (activeRefs[k]) {
@@ -105,6 +100,7 @@ export const createLinkedState = <T extends Record<string, any>>(
     })
   }
 
+  callBack(state)
   return Object.assign(state, { update, debug });
 }
 
