@@ -12,6 +12,7 @@
 import { RouterView } from 'vue-router'
 import { onMounted, onUnmounted } from 'vue';
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
+import { useAppGroupStore } from '@/stores/AppGroupStore';
 
 import { canvasOperator, Particle } from './assets/js/canvas';
 import type { Point, Polygon } from './assets/js/type'
@@ -26,6 +27,7 @@ import { getIntervalXY } from '@/components/utils/storeInterval';
 
 const interval = getIntervalXY()
 const userOperaStore = useUserOperaStore()
+const AppGroupStore = useAppGroupStore()
 
 
 const particles: Array<Particle>[] = []
@@ -78,7 +80,12 @@ const canvasAnimate = (() => {
   };
   const squerePool = new Map<string, Polygon>(); // 对象池优化
 
-  return (curPosition: Point) => {
+  // return (curPosition: Point) => {
+  return (appGroupId: string) => {
+    const curAppGroup = AppGroupStore.getInstance(appGroupId)
+    const curPosition = [curAppGroup!.appGroupPosition[0], curAppGroup!.appGroupPosition[1]]
+
+
     if (userOperaStore.ctrlState === "IDLE") {
       cancelAnimationFrame(requestId ?? 999);
       requestId = null;
@@ -93,12 +100,12 @@ const canvasAnimate = (() => {
     }
 
     // 深度比较数组内容
-    if (JSON.stringify(storeCache.appGroupSize) !== JSON.stringify(appGroupClass.appGroupSize)) {
+    if (JSON.stringify(storeCache.appGroupSize) !== JSON.stringify(curAppGroup!.appGroupSize)) {
       // console.log('尺寸变更:',
       //   JSON.parse(JSON.stringify(storeCache.appGroupSize)),
       //   JSON.parse(JSON.stringify(appGroupClass.appGroupSize))
       // );
-      storeCache.appGroupSize = [...appGroupClass.appGroupSize] as Point;
+      storeCache.appGroupSize = [...curAppGroup!.appGroupSize] as Point;
     }
 
     // 对象池检索

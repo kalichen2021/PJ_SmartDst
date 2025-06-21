@@ -122,9 +122,9 @@ export class MagneticTransitionHandler extends DragHandler {
     super(el)
     const { interval, _startFnCallback, _processFnCallback, _stopFnCallback } = options
     this.interval = interval ?? { x: 0, y: 0 }
-    this._startFnCallback = _startFnCallback ?? (() => {})
-    this._processFnCallback = _processFnCallback ?? (() => {})
-    this._stopFnCallback = _stopFnCallback ?? (() => {})
+    this._startFnCallback = _startFnCallback ?? (() => { })
+    this._processFnCallback = _processFnCallback ?? (() => { })
+    this._stopFnCallback = _stopFnCallback ?? (() => { })
   }
   /**
    * 获得最近的固定点
@@ -228,9 +228,9 @@ export class ScaleHandler extends MagneticTransitionHandler {
     },
   ) {
     super(el, option)
-    this.elStartWidth = this.targetEl.offsetWidth
-    this.elStartHeight = this.targetEl.offsetHeight
-    this.curSize = [3, 3]
+    this.elStartWidth = 0
+    this.elStartHeight = 0
+    this.curSize = [0, 0]
     this.maxSize = option.maxSize ?? [3, 3]
   }
 
@@ -242,6 +242,12 @@ export class ScaleHandler extends MagneticTransitionHandler {
       _y = Math.min(_y, this.maxSize[1] * this.interval.y) // 限制最大高度为 maxSize[1] * interval.y
     }
     return super.getFixedSize(_x, _y) // 调用父类的 getFixedSize 方法，实现缩放效果
+  }
+
+  _start(e: MouseEvent): void {
+    this.elStartWidth = this.targetEl.offsetWidth
+    this.elStartHeight = this.targetEl.offsetHeight
+    super._start(e)
   }
 
   _processInnerFunc() {

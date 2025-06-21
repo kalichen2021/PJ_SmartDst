@@ -36,6 +36,22 @@ import CtnMenu from '@/components/widget/CtnMenu.vue'
 import { clickSwhToHide, createLinkedState, getBoundingRectWithMargin, getCookie, rectToPolygon } from '@/assets/js/utils';
 import { getIntervalXY, setIntervalXY } from './utils/storeInterval.ts';
 import { onUnmounted } from 'vue';
+import type { PropType } from 'vue';
+
+const props = defineProps({
+  name: {
+    type: String,
+    default: Date.now().toString(),
+  },
+  position: {
+    type: (Array as unknown) as PropType<Point>,
+    default: () => [0, 0],
+  },
+  size: {
+    type: (Array as unknown) as PropType<Point>,
+    default: () => [2, 2],
+  },
+})
 
 const icons = ref([
   { id: 1, name: '哔哩哔哩', appPath: "C:/ProgramData/Microsoft/Windows/Start Menu/Programs/哔哩哔哩.lnk" },
@@ -85,9 +101,9 @@ const getClientVal = (relVal: Point) => {
 }
 
 const expose = createLinkedState({
-  name: Date.now().toString(),
-  appGroupPosition: [0, 0] as Point,
-  appGroupSize: [3, 3] as Point,
+  name: props.name,
+  appGroupPosition: props.position,
+  appGroupSize: props.size,
   appGroupClientPosition: ({ appGroupPosition }): Point => getClientVal(appGroupPosition),
   appGroupClientSize: ({ appGroupSize }): Point => getClientVal(appGroupSize),
   appGroupPolygon: ({ appGroupClientPosition, appGroupClientSize }) => {
@@ -166,16 +182,8 @@ onMounted(() => {
       mvHder.curPosition[0],
       mvHder.curPosition[1]
     ]
-    expose.appGroupPosition = [
-      mvHder.curPosition[0],
-      mvHder.curPosition[1]
-    ]
   }
   const storeSize = () => {
-    expose.appGroupSize = [
-      sclHder.curSize[0],
-      sclHder.curSize[1]
-    ]
     expose.appGroupSize = [
       sclHder.curSize[0],
       sclHder.curSize[1]
@@ -191,18 +199,18 @@ onMounted(() => {
         // console.log("start")
         elIconGrp.value!.style.transition = _tranStyle
         userOperaStore.ctrlState = "MOVE"
-        console.log(elIconGrp.value!)
       },
       _processFnCallback: () => {
         // 写入store
         storePosition()
         // 绘制canvas网格
-        userOperaStore.canvasAnimate(mvHder.curPosition)
+        userOperaStore.canvasAnimate(expose.name)
       },
       _stopFnCallback: () => {
         // 写入store
         storePosition()
-        userOperaStore.canvasAnimate(mvHder.curPosition)
+        // userOperaStore.canvasAnimate(mvHder.curPosition)
+        userOperaStore.canvasAnimate(expose.name)
         elIconGrp.value!.style.removeProperty('transition')
         userOperaStore.ctrlState = "IDLE"
         console.log("stop")
@@ -225,7 +233,9 @@ onMounted(() => {
       _processFnCallback: () => {
         // 写入store
         storeSize()
-        userOperaStore.canvasAnimate(mvHder.curPosition)
+        // 重绘canvas网络
+        // userOperaStore.canvasAnimate(mvHder.curPosition)
+        userOperaStore.canvasAnimate(expose.name)
       },
       _stopFnCallback: () => {
         elIconGrp.value!.style.removeProperty('transition')

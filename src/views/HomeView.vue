@@ -2,9 +2,9 @@
   <main>
     <opera-box @click="addAppGroup" />
     <template v-for="(item, id) in appGroupInfoList" :key="item.name">
-      <AppGroup :position="item.appGroupPosition" :size="item.appGroupSize"
+      <AppGroup :position="item.appGroupPosition" :size="item.appGroupSize" :name="item.name"
         @created="(compInstance) => AppGroupStore.register(item.name, compInstance)"
-        @destroyed="(compInstance) => unregister(item.name)" ref="elAppGroupList" />
+        @destroyed="(compInstance) => unregister(item.name)" ref="AppGroupInstanceList" />
     </template>
   </main>
 </template>
@@ -29,7 +29,7 @@ const AppGroupStore = useAppGroupStore()
 const { register, unregister, instances, getInstance } = AppGroupStore
 const appGroupInfoList = ref<AppGroupInintialOption[]>([])
 
-const elAppGroupList = ref<typeof AppGroup[]>()
+const AppGroupInstanceList = ref<InstanceType<typeof AppGroup>[]>()
 
 const addAppGroup = (appGroupOption: AppGroupInintialOption) => {
   appGroupOption ??= {
@@ -38,7 +38,7 @@ const addAppGroup = (appGroupOption: AppGroupInintialOption) => {
     appGroupSize: [2, 2],
   }
   appGroupInfoList.value.push(appGroupOption)
-  console.log(elAppGroupList.value!.at(-1)!.name)
+  console.log(AppGroupStore.getInstance())
 }
 
 onMounted(async () => {

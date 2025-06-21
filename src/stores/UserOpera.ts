@@ -10,7 +10,7 @@ export const useUserOperaStore = defineStore('userOpera', () => {
   const ctrlState: Ref<"MOVE" | "SCALE" | "IDLE" | "EDIT"> = ref("IDLE")
   // const appGroupPosition: Ref<Point> = ref([0, 0])
   // const appGroupSize: Ref<Point> = ref([3, 3])
-  const canvasAnimate: Ref<(curPosition: Point) => void> = ref(() => { })
+  const canvasAnimate: Ref<(appGroupId: string) => void> = ref(() => { })
   const initializeParticles: Ref<Function> = ref(() => { })
 
 
