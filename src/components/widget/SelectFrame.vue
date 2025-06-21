@@ -11,11 +11,13 @@ import { isPolygonInPolygon } from '@/assets/js/utils';
 import type { Polygon } from '@/assets/js/type';
 
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
+import { useAppGroupStore } from '@/stores/AppGroupStore';
 import { watch } from 'vue';
 
 const elSelectFrame = ref<HTMLElement | null>(null)
 
 const userOperaStore = useUserOperaStore()
+const AppGroupStore = useAppGroupStore()
 
 
 onMounted(() => {
@@ -30,8 +32,17 @@ onMounted(() => {
       },
       _stopFnCallback() {
         // console.log(appGroupClass.debug())
-        if (isPolygonInPolygon(appGroupClass.appGroupPolygon as Polygon, slfHder.selectRange)) {
+        let isInRange = false
+        AppGroupStore.instances.forEach((item) => {
+          if (isPolygonInPolygon(item.appGroupPolygon as Polygon, slfHder.selectRange)) {
+            isInRange = true
+          }
+        })
+        if (isInRange) {
           console.log("在范围内")
+        }
+        else {
+          console.log(slfHder.selectRange)
         }
       }
     }

@@ -230,7 +230,7 @@ export class ScaleHandler extends MagneticTransitionHandler {
     super(el, option)
     this.elStartWidth = 0
     this.elStartHeight = 0
-    this.curSize = [0, 0]
+    this.curSize = [3, 3]
     this.maxSize = option.maxSize ?? [3, 3]
   }
 
