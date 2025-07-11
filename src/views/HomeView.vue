@@ -3,7 +3,7 @@
     <opera-box @click="addAppGroup" />
     <template v-for="(item, id) in appGroupInfoList" :key="item.name">
       <AppGroup :position="item.appGroupPosition" :size="item.appGroupSize" :name="item.name"
-        @created="(compInstance) => AppGroupStore.register(item.name, compInstance)"
+        @created="(compInstance) => register(item.name, compInstance)"
         @destroyed="(compInstance) => unregister(item.name)" ref="AppGroupInstanceList" />
     </template>
   </main>
@@ -38,7 +38,6 @@ const addAppGroup = (appGroupOption: AppGroupInintialOption) => {
     appGroupSize: [2, 2],
   }
   appGroupInfoList.value.push(appGroupOption)
-  console.log(AppGroupStore.getInstance())
 }
 
 onMounted(async () => {

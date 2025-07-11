@@ -1,0 +1,34 @@
+/* 断点1：超小屏幕 (<600px) */
+@media screen and (max-width: 599px) {
+  html {
+    font-size: 14px;
+  } /* 1em = 14px */
+}
+
+/* 断点2：小屏幕 (600-899px) */
+@media screen and (min-width: 600px) and (max-width: 899px) {
+  html {
+    font-size: 16px;
+  } /* 1em = 16px */
+}
+
+/* 断点3：中等屏幕 (900-1199px) */
+@media screen and (min-width: 900px) and (max-width: 1199px) {
+  html {
+    font-size: 18px;
+  } /* 1em = 18px */
+}
+
+/* 断点4：大屏幕 (≥1200px) */
+@media screen and (min-width: 1200px) {
+  html {
+    font-size: 28px;
+  } /* 1em = 20px */
+}
+
+/* 高分辨率大屏幕 */
+@media (min-width: 1200px) and (min-resolution: 2dppx) {
+  html {
+    font-size: 22px;
+  }
+}

@@ -91,6 +91,8 @@ const elIconWrap = ref<[HTMLElement] | null>(null)
 const elGrabBar = ref<HTMLElement | null>(null)
 const elScaler = ref<HTMLElement | null>(null)
 const entriesConf = ref<[TP_entryConf]>()
+
+let GrpCtnControllerList: HTMLElement[]
 // tips: InstanceType 实例类型
 const elCtnMenu = ref<InstanceType<typeof CtnMenu> | null>(null)
 
@@ -98,6 +100,24 @@ const getClientVal = (relVal: Point) => {
   const interval = getIntervalXY()
   const [x, y] = relVal
   return [x * interval.x, y * interval.y] as Point
+}
+
+// 允许拖动控件工作
+const enableCtrlerWork = () => {
+  elGrabBar.value!.draggable = true;
+  GrpCtnControllerList.forEach((el) => el!.style.display = "block")
+
+  // 点击空白位置，隐藏控件
+  clickSwhToHide(
+    GrpCtnControllerList,
+    [elCtnMenu.value!.dom!, elIconGrp.value!, ".controller"],
+    // () => userOperaStore.ctrlState = "IDLE"
+    () => {
+      // 复原粒子效果
+      // console.log(userOperaStore.initializeParticles)
+      userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]])
+    }
+  )
 }
 
 const expose = createLinkedState({
@@ -115,24 +135,21 @@ const expose = createLinkedState({
       width: _size[0],
       height: _size[1]
     })
-  }
+  },
+  enableEdit: () => enableCtrlerWork
 })
 
 defineExpose(expose)
 const emit = defineEmits(['created', 'destroyed']);
 
 onMounted(() => {
+  // 组件创造时，执行注册事件
   emit('created', expose);
   // 获取控制器元素
-  const GrpCtnControllerList = Array.from(
+  GrpCtnControllerList = Array.from(
     elIconGrpCtn.value!.querySelectorAll(".controller")
   ) as HTMLElement[];
 
-  // 允许拖动控件工作
-  const enableCtrlerWork = () => {
-    elGrabBar.value!.draggable = true;
-    GrpCtnControllerList.forEach((el) => el!.style.display = "block")
-  }
 
   /**
    * 编辑文件图标组步骤说明；
@@ -152,16 +169,16 @@ onMounted(() => {
     clickHandler: () => {
       enableCtrlerWork()
       // 点击空白位置，隐藏控件
-      clickSwhToHide(
-        GrpCtnControllerList,
-        [elCtnMenu.value!.dom!, elIconGrp.value!],
-        // () => userOperaStore.ctrlState = "IDLE"
-        () => {
-          // 复原粒子效果
-          // console.log(userOperaStore.initializeParticles)
-          userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]])
-        }
-      )
+      // clickSwhToHide(
+      //   GrpCtnControllerList,
+      //   [elCtnMenu.value!.dom!, elIconGrp.value!],
+      //   // () => userOperaStore.ctrlState = "IDLE"
+      //   () => {
+      //     // 复原粒子效果
+      //     // console.log(userOperaStore.initializeParticles)
+      //     userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]])
+      //   }
+      // )
     }
   }]
   //#endregion
@@ -258,6 +275,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  // 组件销毁时，执行注销事件
   emit('destroyed', expose.name);
 })
 </script>
@@ -377,7 +395,7 @@ onUnmounted(() => {
   /* For Firefox */
   /* Custom scrollbar styles for WebKit browsers */
   &::-webkit-scrollbar {
-    width: 2px;
+    width: 0px;
   }
 
   &::-webkit-scrollbar-track {

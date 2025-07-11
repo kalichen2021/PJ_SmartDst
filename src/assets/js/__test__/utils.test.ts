@@ -45,7 +45,7 @@ test('链式依赖', async () => {
   const state = createLinkedState({
     base: 10,
     double: ({ base }): number => base * 2,
-    quadruple: ({ double }) => double * 2
+    quadruple: ({ double }) => (double as number) * 2
   });
 
   expect(state.double).toBe(20);

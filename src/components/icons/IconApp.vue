@@ -25,7 +25,18 @@ const EncodeAppPath = computed(() => {
 })
 
 const LaunchApp = () => {
-  window.location.href = `SmartDstLauncher://${EncodeAppPath.value}`;
+  // 创建临时链接元素
+  const link = document.createElement('a');
+  link.href = `SmartDstLauncher://${EncodeAppPath.value}`;
+
+  // 添加必要的属性
+  link.style.display = 'none';
+  link.target = '_blank';
+
+  // 添加到DOM并触发点击
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 </script>
 

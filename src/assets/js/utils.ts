@@ -104,8 +104,13 @@ export const createLinkedState = <T extends Record<string, any>>(
   return Object.assign(state, { update, debug });
 }
 
-
+const RESET_COOKIE = false
 export const getCookie = (name: string) => {
+  if (RESET_COOKIE) {
+    // 删除该项cookie
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+    return "";
+  }
   const cookieName = name + "=";
   const decodedCookie = decodeURIComponent(document.cookie);
   const cookieArray = decodedCookie.split(';');
@@ -248,6 +253,13 @@ export const getBoundingRectWithMargin = (element: HTMLElement) => {
 
 
 const customStorage: { hideCallback?: Function } = {};
+const toDom = (elList: (HTMLElement | string)[]): (HTMLElement)[] => {
+  return elList.map(el => {
+    return typeof el === 'string'
+      ? document.querySelector(el) as HTMLElement || el
+      : el;
+  });
+}
 /**
  * 点击空白位置，隐藏控件
  * @param willHiddenElement 需要隐藏的元素组, mousedown事件的e.target将会排除这些元素及其子元素, mousedown事件后隐藏
@@ -256,19 +268,23 @@ const customStorage: { hideCallback?: Function } = {};
  * @param isVisibleVal 需要隐藏的元素组的显示状态（ref响应式变量）, mousedown事件赋值为false
  */
 export const clickSwhToHide = (
-  willHiddenElement: itemOrArray<HTMLElement>,
-  excludeElementGrp: itemOrArray<HTMLElement> = [],
+  willHiddenElement: itemOrArray<HTMLElement | string>,
+  excludeElementGrp: itemOrArray<HTMLElement | string> = [],
   hideCallback?: Function,
 ) => {
   // tips：ts 类型断言，会影响整个文件的类型推导
-  excludeElementGrp = toArray(excludeElementGrp);
-  willHiddenElement = toArray(willHiddenElement);
+  const _excludeElementGrp = toDom(toArray(excludeElementGrp));
+  const _willHiddenElement = toDom(toArray(willHiddenElement));
   customStorage.hideCallback = hideCallback;
 
+  /**
+   * @param targetEl 目标元素
+   * @returns 是否在排除元素组中
+   */
   const _isExcludeEl = (targetEl: HTMLElement): boolean => {
     // tips: 使用return时注意多层嵌套
     let _r = false;
-    [...excludeElementGrp, ...willHiddenElement].forEach((el) => {
+    [..._excludeElementGrp, ..._willHiddenElement].forEach((el) => {
       // if (isInDom(targetEl, el)) return true;;
       if (isInDom(targetEl, el)) {
         _r = true;
@@ -278,12 +294,19 @@ export const clickSwhToHide = (
     return _r;
   };
 
+  /**
+   * @param e mousedown事件
+   * @returns 
+   */
   const _hide = (e: MouseEvent) => {
     if (_isExcludeEl(e.target as HTMLElement)) {
+      console.log("点击了排除元素");
       return;
     }
+    console.log("点击了空白位置");
+    // 点击空白位置，隐藏控件
     document.removeEventListener("mousedown", _hide);
-    [...willHiddenElement].forEach((el) => (el.style.display = "none"));
+    [..._willHiddenElement].forEach((el) => (el.style.display = "none"));
     customStorage.hideCallback?.();
   };
   document.addEventListener("mousedown", _hide);

@@ -26,7 +26,7 @@ export const useAppGroupStore = defineStore('AppGroup', () => {
 
   const getInstance = (id?: string): AppGroupInstance | undefined => {
     if (!id) {
-      return instances.value
+      return instances.value.values().next().value
     }
     if (!instances.value.has(id)) {
       throw new Error(`Component with id ${id} not found`);

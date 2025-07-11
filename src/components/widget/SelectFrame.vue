@@ -36,14 +36,16 @@ onMounted(() => {
         AppGroupStore.instances.forEach((item) => {
           if (isPolygonInPolygon(item.appGroupPolygon as Polygon, slfHder.selectRange)) {
             isInRange = true
+            item.enableEdit()
+            console.log(item.name, "在范围内")
           }
         })
         if (isInRange) {
-          console.log("在范围内")
+          // console.log("在范围内")
         }
-        else {
-          console.log(slfHder.selectRange)
-        }
+        // else {
+        //   console.log(slfHder.selectRange)
+        // }
       }
     }
   )
