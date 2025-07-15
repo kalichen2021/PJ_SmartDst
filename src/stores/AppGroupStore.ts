@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import { ref, type ComponentPublicInstance } from "vue";
 import type { Point, Polygon } from "@/assets/js/type";
 import { rectToPolygon } from "@/assets/js/utils";
-import { getIntervalXY } from "@/components/utils/storeInterval";
+import { getIntervalXY } from "@/components/utils/StoreInterval";
 
 import AppGroup from "@/components/AppGroup.vue"
 

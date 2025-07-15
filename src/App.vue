@@ -23,7 +23,7 @@ import SelectFrame from '@/components/widget/SelectFrame.vue'
 import Test from './components/Test.vue';
 import OperaBox from '@/components/OperaBox.vue';
 
-import { getIntervalXY } from '@/components/utils/storeInterval';
+import { getIntervalXY } from '@/components/utils/StoreInterval';
 
 const interval = getIntervalXY()
 const userOperaStore = useUserOperaStore()

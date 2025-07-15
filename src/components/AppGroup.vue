@@ -24,7 +24,7 @@ import { ref, onMounted, watchEffect } from 'vue';
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
 import { useAppGroupStore } from '@/stores/AppGroupStore';
 
-import { MoveHandler, ScaleHandler } from './utils/mouseInteract.ts';
+import { MoveHandler, ScaleHandler } from './utils/MouseInteract.ts';
 import type { Point, TP_entryConf } from '@/assets/js/type'
 
 import IconApp from './icons/IconApp.vue';
@@ -34,9 +34,10 @@ import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
 import { clickSwhToHide, createLinkedState, getBoundingRectWithMargin, getCookie, rectToPolygon } from '@/assets/js/utils';
-import { getIntervalXY, setIntervalXY } from './utils/storeInterval.ts';
+import { getIntervalXY, setIntervalXY } from './utils/StoreInterval.ts';
 import { onUnmounted } from 'vue';
 import type { PropType } from 'vue';
+import { markRaw } from 'vue';
 
 const props = defineProps({
   name: {
@@ -120,10 +121,30 @@ const enableCtrlerWork = () => {
   )
 }
 
+type AppGroupState = "IDLE" | "EDITING" | "EDIT_DRAG" | "EDIT_SCALE";
+
 const expose = createLinkedState({
-  name: props.name,
+  ...markRaw({ name: props.name }),
   appGroupPosition: props.position,
   appGroupSize: props.size,
+  state: {
+    default: "IDLE" as AppGroupState,
+    callback: (curState) => {
+      switch (curState) {
+        case "IDLE":
+
+          break;
+        case "EDITING":
+          break;
+        case "EDIT_DRAG":
+          break
+        case "EDIT_SCALE":
+          break;
+        default:
+          break;
+      }
+    }
+  },
   appGroupClientPosition: ({ appGroupPosition }): Point => getClientVal(appGroupPosition),
   appGroupClientSize: ({ appGroupSize }): Point => getClientVal(appGroupSize),
   appGroupPolygon: ({ appGroupClientPosition, appGroupClientSize }) => {

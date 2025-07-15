@@ -6,8 +6,8 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { SelectFrameHandler } from '../utils/mouseInteract';
-import { isPolygonInPolygon } from '@/assets/js/utils';
+import { SelectFrameHandler } from '../utils/MouseInteract';
+import { clickSwhToHide, isPolygonInPolygon } from '@/assets/js/utils';
 import type { Polygon } from '@/assets/js/type';
 
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
@@ -37,12 +37,10 @@ onMounted(() => {
           if (isPolygonInPolygon(item.appGroupPolygon as Polygon, slfHder.selectRange)) {
             isInRange = true
             item.enableEdit()
+            item.state = "EDITING"
             console.log(item.name, "在范围内")
           }
         })
-        if (isInRange) {
-          // console.log("在范围内")
-        }
         // else {
         //   console.log(slfHder.selectRange)
         // }

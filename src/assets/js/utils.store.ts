@@ -1,8 +1,33 @@
-import { expect, test } from 'vitest'
-import { rectToPolygon } from "../utils";
-import { nextTick } from 'process';
-import { reactive, ref, triggerRef, type Reactive, type Ref } from 'vue';
+import { reactive, triggerRef, type Ref, ref, type Reactive } from "vue";
 
+
+
+const RESET_COOKIE = false
+export const getCookie = (name: string) => {
+  if (RESET_COOKIE) {
+    // 删除该项cookie
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+    return "";
+  }
+  const cookieName = name + "=";
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArray = decodedCookie.split(';');
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i];
+    while (cookie.charAt(0) === ' ') {
+      cookie = cookie.substring(1);
+    }
+    if (cookie.indexOf(cookieName) === 0) {
+      return cookie.substring(cookieName.length, cookie.length);
+    }
+  }
+  return "";
+}
+
+export const setCookie = (name: string, value: string | number, days: number = 365) => {
+  const expires = new Date(Date.now() + days * 864e+5).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+}
 
 /**
  * 创建联动响应式状态对象
@@ -32,7 +57,7 @@ export const createLinkedState = <T extends Record<string, any>>(
   _config: {
     [K in keyof T]: {
       default: T[K] | ((deps: Omit<T, K>) => T[K]),
-      callback?: (state: Reactive<{ [K in keyof T]: T[K]; }>) => void
+      callback?: (newVal: typeof _config.default) => void
     } | T[K] | ((deps: Omit<T, K>) => T[K])
   },
 ) => {
@@ -94,36 +119,15 @@ export const createLinkedState = <T extends Record<string, any>>(
 
   return Object.assign(state, { update, debug });
 }
-test('链式依赖', async () => {
-  type TP_state = {
-    base: number,
-    double: number,
-    quadruple: number
+
+export const createDynamicState = <S>(option: {
+  default: keyof S,
+  callBackOpt: {
+    [K in keyof S]: (state: S) => void
   }
-  const state = createLinkedState({
-    base: {
-      default: 10,
-      callback: () => {
-        console.log("base has changed")
-      }
-    },
-    double: ({ base }): number => base * 2,
-    quadruple: {
-      default: ({ double }) => (double as number) * 2
-    }
-  });
-
-  expect(state.double).toBe(20);
-  expect(state.quadruple).toBe(40);
-
-  state.base = 20;
-  expect(state.double).toBe(40);
-  expect(state.quadruple).toBe(80);
-  console.log(state.quadruple)
-
-  // state.update({ base: 20 });
-  // await nextTick(() => {
-  //   expect(state.double).toBe(40);
-  //   expect(state.quadruple).toBe(80);
-  // });
-});
+}) => {
+  const { default: defaultKey, callBackOpt } = option;
+  // const state = reactive<S>({} as any);
+  // state[defaultKey] = callBackOpt[defaultKey];
+  // return state;
+}

@@ -1,3 +1,20 @@
-var a = 1;
-var b = a ? console.log(this) : null;
-console.log(b);
+const _config = {
+  a: {
+    default: 1,
+    callback: () => {
+      console.log(1)
+    }
+  },
+  b: {
+    default: 1,
+    callback: () => {
+      console.log(2)
+    }
+  }
+}
+
+
+const ValueObj = Object.keys(_config).filter(k => _config[k].default)
+const CallbackObj = Array.from()
+
+console.log(CallbackObj)
