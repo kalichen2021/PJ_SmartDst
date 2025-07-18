@@ -75,12 +75,12 @@ img {
 }
 
 span {
-  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+  font-size: clamp(0.65rem, 1.2vw, 0.75rem);
   color: var(--color-text);
   text-align: center;
   max-width: 100%;
   white-space: nowrap;
-  overflow: hidden;
+  /* overflow: hidden; */
   text-overflow: ellipsis;
 }
 </style>

@@ -24,8 +24,8 @@ import { ref, onMounted, watchEffect } from 'vue';
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
 import { useAppGroupStore } from '@/stores/AppGroupStore';
 
-import { MoveHandler, ScaleHandler } from './utils/MouseInteract.ts';
-import type { Point, TP_entryConf, UserOperaState } from '@/assets/js/type'
+import { MoveHandler, ScaleHandler } from './utils/MouseInteract';
+import type { Point, TP_entryConf, UserOperaState } from '@/assets/js/type';
 
 import IconApp from './icons/IconApp.vue';
 import IconBar from './icons/IconBar.vue';
@@ -34,7 +34,7 @@ import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
 import { clickSwhToHide, createLinkedState, getBoundingRectWithMargin, getCookie, rectToPolygon } from '@/assets/js/utils';
-import { getIntervalXY, setIntervalXY } from './utils/StoreInterval.ts';
+import { getIntervalXY, setIntervalXY } from './utils/StoreInterval';
 import { onUnmounted } from 'vue';
 import type { PropType } from 'vue';
 import { markRaw } from 'vue';

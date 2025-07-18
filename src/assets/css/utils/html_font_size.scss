@@ -1,34 +1,44 @@
-/* 断点1：超小屏幕 (<600px) */
-@media screen and (max-width: 599px) {
-  html {
-    font-size: 14px;
-  } /* 1em = 14px */
+// 基准设置
+$default-size: 16px;
+
+html {
+  font-size: $default-size;
 }
 
-/* 断点2：小屏幕 (600-899px) */
-@media screen and (min-width: 600px) and (max-width: 899px) {
+// 中DPI范围 (96-192dpi)
+@media (min-resolution: 96dpi) and (max-resolution: 192dpi) {
   html {
-    font-size: 16px;
-  } /* 1em = 16px */
+    font-size: $default-size * 1;
+    /* 1倍基准 */
+  }
 }
 
-/* 断点3：中等屏幕 (900-1199px) */
-@media screen and (min-width: 900px) and (max-width: 1199px) {
+// 高DPI范围 (192-300dpi)
+@media (min-resolution: 192dpi) and (max-resolution: 300dpi) {
   html {
-    font-size: 18px;
-  } /* 1em = 18px */
+    font-size: $default-size * 1.125;
+    /* 1.125倍基准 */
+
+  }
 }
 
-/* 断点4：大屏幕 (≥1200px) */
-@media screen and (min-width: 1200px) {
+// 超高DPI (300dpi+)
+@media (min-resolution: 300dpi) {
   html {
-    font-size: 28px;
-  } /* 1em = 20px */
+    font-size: $default-size * 1.25;
+    /* 1.25倍基准 */
+  }
 }
 
-/* 高分辨率大屏幕 */
-@media (min-width: 1200px) and (min-resolution: 2dppx) {
+// 兼容移动端设备像素比
+@media (-webkit-device-pixel-ratio: 1.5) {
   html {
-    font-size: 22px;
+    font-size: $default-size * 1.25;
+  }
+}
+
+@media (-webkit-device-pixel-ratio: 2) {
+  html {
+    font-size: $default-size * 2;
   }
 }
