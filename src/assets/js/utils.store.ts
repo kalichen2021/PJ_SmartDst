@@ -94,7 +94,7 @@ export const createLinkedState = <T extends Record<string, any>>(
         set: (val) => {
           config[k].default = val;
           // triggerRef(activeRefs[k]);
-          config[k].callback && config[k].callback(state)
+          config[k].callback && config[k].callback(val)
         }
       })
     })

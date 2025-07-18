@@ -25,7 +25,7 @@ import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
 import { useAppGroupStore } from '@/stores/AppGroupStore';
 
 import { MoveHandler, ScaleHandler } from './utils/MouseInteract.ts';
-import type { Point, TP_entryConf } from '@/assets/js/type'
+import type { Point, TP_entryConf, UserOperaState } from '@/assets/js/type'
 
 import IconApp from './icons/IconApp.vue';
 import IconBar from './icons/IconBar.vue';
@@ -38,6 +38,7 @@ import { getIntervalXY, setIntervalXY } from './utils/StoreInterval.ts';
 import { onUnmounted } from 'vue';
 import type { PropType } from 'vue';
 import { markRaw } from 'vue';
+import { reactive } from 'vue';
 
 const props = defineProps({
   name: {
@@ -93,7 +94,7 @@ const elGrabBar = ref<HTMLElement | null>(null)
 const elScaler = ref<HTMLElement | null>(null)
 const entriesConf = ref<[TP_entryConf]>()
 
-let GrpCtnControllerList: HTMLElement[]
+let GrpCtnControllerList: HTMLElement[] = []
 // tips: InstanceType 实例类型
 const elCtnMenu = ref<InstanceType<typeof CtnMenu> | null>(null)
 
@@ -121,20 +122,30 @@ const enableCtrlerWork = () => {
   )
 }
 
-type AppGroupState = "IDLE" | "EDITING" | "EDIT_DRAG" | "EDIT_SCALE";
+const setCtrlerDisplayStyle = (displayStyle: string) => {
+  elGrabBar.value!.style.display = displayStyle
+  elScaler.value!.style.display = displayStyle
+}
 
 const expose = createLinkedState({
   ...markRaw({ name: props.name }),
   appGroupPosition: props.position,
   appGroupSize: props.size,
+  GrpCtnCtrlerList: reactive({
+    default: [elGrabBar, elScaler]
+  }),
   state: {
-    default: "IDLE" as AppGroupState,
+    default: "IDLE" as UserOperaState,
     callback: (curState) => {
+      console.log(curState)
       switch (curState) {
         case "IDLE":
-
+          userOperaStore.ctrlState = "IDLE";
+          setCtrlerDisplayStyle("none")
+          userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]]);// 复原粒子效果
           break;
         case "EDITING":
+          setCtrlerDisplayStyle("block")
           break;
         case "EDIT_DRAG":
           break
@@ -189,17 +200,6 @@ onMounted(() => {
     // 点击进入控件设置
     clickHandler: () => {
       enableCtrlerWork()
-      // 点击空白位置，隐藏控件
-      // clickSwhToHide(
-      //   GrpCtnControllerList,
-      //   [elCtnMenu.value!.dom!, elIconGrp.value!],
-      //   // () => userOperaStore.ctrlState = "IDLE"
-      //   () => {
-      //     // 复原粒子效果
-      //     // console.log(userOperaStore.initializeParticles)
-      //     userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]])
-      //   }
-      // )
     }
   }]
   //#endregion
@@ -236,7 +236,8 @@ onMounted(() => {
       _startFnCallback: () => {
         // console.log("start")
         elIconGrp.value!.style.transition = _tranStyle
-        userOperaStore.ctrlState = "MOVE"
+        userOperaStore.ctrlState = "EDIT_DRAG"
+        expose.state = "EDIT_DRAG"
       },
       _processFnCallback: () => {
         // 写入store
@@ -246,11 +247,12 @@ onMounted(() => {
       },
       _stopFnCallback: () => {
         // 写入store
-        storePosition()
+        // storePosition()
         // userOperaStore.canvasAnimate(mvHder.curPosition)
         userOperaStore.canvasAnimate(expose.name)
         elIconGrp.value!.style.removeProperty('transition')
-        userOperaStore.ctrlState = "IDLE"
+        userOperaStore.ctrlState = "EDITING"
+        expose.state = "EDITING"
         console.log("stop")
       }
     }
@@ -266,7 +268,8 @@ onMounted(() => {
         elIconGrp.value!.style.transition = _tranStyle
         elIconGrpCtn.value!.style.transition = _tranStyle
         elGridCtn.value!.style.transition = _tranStyle
-        userOperaStore.ctrlState = "SCALE"
+        // userOperaStore.ctrlState = "SCALE"
+        expose.state = "EDIT_SCALE"
       },
       _processFnCallback: () => {
         // 写入store
@@ -279,7 +282,8 @@ onMounted(() => {
         elIconGrp.value!.style.removeProperty('transition')
         elIconGrpCtn.value!.style.removeProperty('transition')
         elGridCtn.value!.style.removeProperty('transition')
-        userOperaStore.ctrlState = "IDLE"
+        // userOperaStore.ctrlState = "IDLE"
+        expose.state = "EDITING"
       }
     }
     //#endregion

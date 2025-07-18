@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { SelectFrameHandler } from '../utils/MouseInteract';
-import { clickSwhToHide, isPolygonInPolygon } from '@/assets/js/utils';
+import { clickSwhToHide, isPolygonInPolygon, UserOperaHandler } from '@/assets/js/utils';
 import type { Polygon } from '@/assets/js/type';
 
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
@@ -19,7 +19,29 @@ const elSelectFrame = ref<HTMLElement | null>(null)
 const userOperaStore = useUserOperaStore()
 const AppGroupStore = useAppGroupStore()
 
+// 允许拖动控件工作
+// const enableCtrlerWork = (elGrabBar, GrpCtnControllerList) => {
+//   elGrabBar.value!.draggable = true;
+//   GrpCtnControllerList.forEach((el) => el!.style.display = "block")
 
+//   // 点击空白位置，隐藏控件
+//   clickSwhToHide(
+//     GrpCtnControllerList,
+//     [elCtnMenu.value!.dom!, elIconGrp.value!, ".controller"],
+//     // () => userOperaStore.ctrlState = "IDLE"
+//     () => {
+//       // 复原粒子效果
+//       // console.log(userOperaStore.initializeParticles)
+//       userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]])
+//     }
+//   )
+// }
+
+// let UserOperaHandler = () => {
+//   document.addEventListener("mousedown", e => {
+
+//   })
+// }
 onMounted(() => {
   const interval = { x: 1, y: 1 }
   const slfHder = new SelectFrameHandler(
@@ -31,19 +53,16 @@ onMounted(() => {
 
       },
       _stopFnCallback() {
-        // console.log(appGroupClass.debug())
-        let isInRange = false
         AppGroupStore.instances.forEach((item) => {
           if (isPolygonInPolygon(item.appGroupPolygon as Polygon, slfHder.selectRange)) {
-            isInRange = true
-            item.enableEdit()
             item.state = "EDITING"
             console.log(item.name, "在范围内")
+            // UserOperaHandler()
+            // UserOperaHandler = () => null
+            UserOperaHandler(AppGroupStore.instances)
           }
         })
-        // else {
-        //   console.log(slfHder.selectRange)
-        // }
+        slfHder.dragable = false
       }
     }
   )

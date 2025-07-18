@@ -1,99 +1,10 @@
 import { expect, test } from 'vitest'
-import { rectToPolygon } from "../utils";
+import { createLinkedState, rectToPolygon } from "../utils";
 import { nextTick } from 'process';
 import { reactive, ref, triggerRef, type Reactive, type Ref } from 'vue';
 
 
-/**
- * 创建联动响应式状态对象
- * @template T 状态对象类型，应包含字符串键和任意值类型
- * @param config 配置对象，包含两种类型的属性：
- *               - 主动变量：直接赋值的基础值
- *               - 从动变量：接收依赖参数并返回计算值的函数
- * 
- * @returns 返回包含以下内容的对象：
- *          - 所有状态的响应式访问器
- *          - update方法：用于批量更新主动变量
- * 
- * @example
- * const state = createLinkedState({
- *   width: 100,
- *   height: 50,
- *   area: ({ width, height }) => width * height,
- *   ratio: ({ width, height }) => width / height
- * });
- * 
- * state.update({ width: 200, height: 100 });
- * // 也可以直接修改
- * console.log(state.area);  // 20000
- * console.log(state.ratio); // 2
- */
-export const createLinkedState = <T extends Record<string, any>>(
-  _config: {
-    [K in keyof T]: {
-      default: T[K] | ((deps: Omit<T, K>) => T[K]),
-      callback?: (state: Reactive<{ [K in keyof T]: T[K]; }>) => void
-    } | T[K] | ((deps: Omit<T, K>) => T[K])
-  },
-) => {
-  // !!优化类型断言
-  let NormolizeConfig: Record<string, any> = {}, config: {
-    [K in keyof T]: {
-      default: T[K] | ((deps: Omit<T, K>) => T[K]),
-      callback?: (state: Reactive<{ [K in keyof T]: T[K]; }>) => void
-    }
-  }
-  Object.keys(_config)
-    .forEach(k => {
-      const value = typeof _config[k] === 'object'
-        ? _config[k]
-        : {
-          default: _config[k]
-        }
-      NormolizeConfig[k] = value
-    })
-  config = NormolizeConfig as unknown as {
-    [K in keyof T]: {
-      default: T[K] | ((deps: Omit<T, K>) => T[K]),
-      callback?: (state: Reactive<{ [K in keyof T]: T[K]; }>) => void
-    }
-  }
 
-  const state = reactive<{ [K in keyof T]: T[K] }>({} as any);
-  // 为所有主动变量创建ref
-  Object.keys(config)
-    .filter(k => typeof config[k].default !== 'function')
-    .forEach(k => {
-      Object.defineProperty(state, k, {
-        get: () => config[k].default,
-        set: (val) => {
-          config[k].default = val;
-          // triggerRef(activeRefs[k]);
-          config[k].callback && config[k].callback(state)
-        }
-      })
-    })
-  // 为所有从动变量创建ref
-  Object.keys(config)
-    .filter(k => typeof config[k].default === 'function')
-    .forEach(k => {
-      const driveFunc = config[k].default as (deps: any) => T[typeof k];
-      Object.defineProperty(state, k, {
-        get: () => driveFunc(state),
-        set: (val) => {
-          config[k].callback && config[k].callback(state)
-          throw new Error(`请通过 update 方法修改主动变量`);
-        }
-      })
-    })
-
-
-  const update = () => { }
-
-  const debug = () => { }
-
-  return Object.assign(state, { update, debug });
-}
 test('链式依赖', async () => {
   type TP_state = {
     base: number,
@@ -127,3 +38,16 @@ test('链式依赖', async () => {
   //   expect(state.quadruple).toBe(80);
   // });
 });
+
+test("动态性检验", () => {
+  const dyn = ref(123)
+  const a = createLinkedState({
+    dy: reactive({
+      default: dyn,
+    })
+  })
+
+  expect(a.dy).toBe(123)
+  dyn.value = 456
+  expect(a.dy).toBe(456)
+})

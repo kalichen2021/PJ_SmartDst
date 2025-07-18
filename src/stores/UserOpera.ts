@@ -1,4 +1,4 @@
-import type { Point, Polygon } from "@/assets/js/type";
+import type { Point, Polygon, UserOperaState } from "@/assets/js/type";
 import { createLinkedState, getCookie, rectToPolygon } from "@/assets/js/utils";
 import { defineStore } from "pinia";
 import { computed, reactive, ref, type Ref } from "vue";
@@ -7,7 +7,7 @@ import { getIntervalXY } from "@/components/utils/StoreInterval";
 
 
 export const useUserOperaStore = defineStore('userOpera', () => {
-  const ctrlState: Ref<"MOVE" | "SCALE" | "IDLE" | "EDIT"> = ref("IDLE")
+  const ctrlState: Ref<UserOperaState> = ref("IDLE")
   // const appGroupPosition: Ref<Point> = ref([0, 0])
   // const appGroupSize: Ref<Point> = ref([3, 3])
   const canvasAnimate: Ref<(appGroupId: string) => void> = ref(() => { })

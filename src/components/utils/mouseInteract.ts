@@ -315,7 +315,6 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
 
   _stop(e: MouseEvent): void {
     super._stop(e)
-    this.dragable = false
     this.targetEl.removeAttribute('style')
   }
 }

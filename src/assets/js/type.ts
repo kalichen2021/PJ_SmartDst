@@ -6,6 +6,8 @@ export interface TP_entryConf {
   clickHandler: (e?: MouseEvent) => void
 }
 
+export type UserOperaState = "IDLE" | "EDITING" | "EDIT_DRAG" | "EDIT_SCALE";
+
 export type itemOrArray<T> = T | Array<T>
 
 export type AniNumOpt = `+${number}` | `-${number}` | number
