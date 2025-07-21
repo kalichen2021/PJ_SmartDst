@@ -48,8 +48,5 @@ onMounted(async () => {
       appGroupSize: [2, 2],
     }
   )
-  console.log(await AppGroupStore.instances)
-
-
 })
 </script>

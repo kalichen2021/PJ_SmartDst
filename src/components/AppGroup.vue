@@ -128,7 +128,10 @@ const setCtrlerDisplayStyle = (displayStyle: string) => {
 }
 
 const expose = createLinkedState({
-  ...markRaw({ name: props.name }),
+  ...markRaw({
+    name: props.name,
+    id: props.name,
+  }),
   appGroupPosition: props.position,
   appGroupSize: props.size,
   GrpCtnCtrlerList: reactive({
@@ -243,13 +246,13 @@ onMounted(() => {
         // 写入store
         storePosition()
         // 绘制canvas网格
-        userOperaStore.canvasAnimate(expose.name)
+        userOperaStore.canvasAnimate(expose.id)
       },
       _stopFnCallback: () => {
         // 写入store
         // storePosition()
         // userOperaStore.canvasAnimate(mvHder.curPosition)
-        userOperaStore.canvasAnimate(expose.name)
+        userOperaStore.canvasAnimate(expose.id)
         elIconGrp.value!.style.removeProperty('transition')
         userOperaStore.ctrlState = "EDITING"
         expose.state = "EDITING"
@@ -276,7 +279,7 @@ onMounted(() => {
         storeSize()
         // 重绘canvas网络
         // userOperaStore.canvasAnimate(mvHder.curPosition)
-        userOperaStore.canvasAnimate(expose.name)
+        userOperaStore.canvasAnimate(expose.id)
       },
       _stopFnCallback: () => {
         elIconGrp.value!.style.removeProperty('transition')
@@ -301,7 +304,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   // 组件销毁时，执行注销事件
-  emit('destroyed', expose.name);
+  emit('destroyed', expose.id);
 })
 </script>
 

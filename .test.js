@@ -18,3 +18,4 @@ const ValueObj = Object.keys(_config).filter(k => _config[k].default)
 const CallbackObj = Array.from()
 
 console.log(CallbackObj)
+

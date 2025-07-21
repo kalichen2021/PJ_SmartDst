@@ -34,14 +34,20 @@ const particles: Array<Particle>[] = []
 let requestId: number | null;
 
 const initializeParticles = (rows: number, cols: number) => {
+  rows = cols = 1 // debug
   const newParticles: Array<Particle[]> = [];
   for (let col = 1; col <= cols; col++) {
     const rowParticles: Particle[] = [];
     for (let row = 1; row <= rows; row++) {
       const p = new Particle({
         interval,
-        x: row,
-        y: col,
+        // debug
+        ...{
+          x: row * 5,
+          y: col * 5
+        },
+        // x: row,
+        // y: col,
         color: "rgba(0, 163, 123, 0.5)",
         radius: 8,
       });
@@ -54,10 +60,22 @@ const initializeParticles = (rows: number, cols: number) => {
 
 const animateParticle = (p: Particle, squere: Polygon) => {
   // if (!p.needsUpdate) return;
-  p.animate({
-    radius: isPointInPolygon([p.x, p.y], squere) ? 20 : 8,
-    duration: isPointInPolygon([p.x, p.y], squere) ? 100 : 400
-  });
+  let _y = p.y - 0.1
+  if (isPointInPolygon([p.x, p.y], squere)) {
+    p.animate({
+      radius: 20,
+      // x:  p.x + interval.x : p.x,
+      // y: "+0",
+      duration: 100
+    });
+  } else {
+    p.animate({
+      radius: 8,
+      // x:  p.x + interval.x.x,
+      // y: "-0.1",
+      duration: 1000
+    });
+  }
   // p.needsUpdate = false;
 };
 
@@ -139,7 +157,7 @@ onMounted(() => {
 
   const rows = Math.floor(backMedia.canvas.width / interval.x);
   const cols = Math.floor(backMedia.canvas.height / interval.y);
-  console.log(interval.x, interval.y)
+  console.log(`interX: ${interval.x}, interY: ${interval.y}`)
 
   particles.push(...initializeParticles(rows, cols));
   backMedia.addItem<Particle>(particles);

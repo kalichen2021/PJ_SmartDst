@@ -166,9 +166,60 @@ export class Particle extends canvasInfo {
     this.interval = interval
   }
 
-  private getOriginAttr() {
+  private _getOriginAttr() {
+    console.log("Particle got origin attr")
     this._originAttr = this;
-    this.getOriginAttr = () => null;
+    this._getOriginAttr = () => null;
+  }
+  private _setAttr = (
+    setAttrOption: {
+      [K in keyof ParticleNumAttr]: number
+    } & {
+      duration: number;
+      ease?: (progress: number) => number;
+    },
+    callback?: (curObj: Particle) => void
+  ) => {
+    const
+      key = Object.keys(setAttrOption)[0] as keyof ParticleNumAttr,
+      endAttr = setAttrOption[key]!,
+      duration = setAttrOption.duration,
+      ease = setAttrOption.ease;
+
+    const
+      startAttr = this[key],
+      t0 = Date.now()
+
+    var rafId = 0; // 新增：用于保存rafId
+    const _process = () => {
+      const dt = Date.now() - t0;
+      const progress = Math.min(dt / duration, 1);
+      const easedProgress = ease ? ease(progress) : progress;
+      this[key] = startAttr + (endAttr - startAttr) * easedProgress;
+      if (dt >= duration) {
+        this[key] = endAttr;
+        this.isAni = false;
+        callback?.(this);
+        cancelAnimationFrame(rafId); // 新增：清理回调
+        return;
+      }
+      rafId = requestAnimationFrame(_process); // 保存rafId
+    };
+    _process();
+  };
+
+  private _getEndAttr = (editedAttr: AniNumOpt, originAttr: number) => {
+    if (typeof editedAttr === "number") {
+      return editedAttr as number;
+    } else if (typeof editedAttr === "string") {
+      const _val = editedAttr as string;
+      if (_val.startsWith("+")) {
+        return originAttr + parseFloat(_val.slice(1));
+      } else if (_val.startsWith("-")) {
+        return originAttr - parseFloat(_val.slice(1));
+      }
+    }
+    return originAttr;
   }
 
   /**
@@ -218,56 +269,25 @@ export class Particle extends canvasInfo {
     options: itemOrArray<SetNumAttrOption<ParticleNumAttr<AniNumOpt>>>,
     callback?: (curObj: Particle) => void
   ) {
-    this.getOriginAttr();
-    if (this.isAni) return;
+    this._getOriginAttr();
+    console.log("animat is fucking ending")
+    if (this.isAni) {
+      console.log("animating")
+      return
+    };
 
     this.isAni = true;
     options = toArray(options);
-
-    const _setAttr = (key: keyof ParticleNumAttr, endAttr: number, duration: number) => {
-      const startAttr = this[key];
-      const t0 = Date.now();
-      const dT = (endAttr - startAttr) / duration;
-
-      var rafId = 0; // 新增：用于保存rafId
-      const _process = () => {
-        const dt = Date.now() - t0;
-        const progress = Math.min(dt / duration, 1);
-        const easedProgress = options[0].easing ? options[0].easing(progress) : progress;
-        this[key] = startAttr + (endAttr - startAttr) * easedProgress;
-        if (dt >= duration) {
-          this[key] = endAttr;
-          this.isAni = false;
-          callback?.(this);
-          cancelAnimationFrame(rafId); // 新增：清理回调
-          return;
-        }
-        rafId = requestAnimationFrame(_process); // 保存rafId
-      };
-      _process();
-    };
-
-    const _getEndAttr = (key: keyof ParticleNumAttr) => {
-      if (typeof options[0][key] === "number") {
-        return options[0][key] as number;
-      } else if (typeof options[0][key] === "string") {
-        const _val = options[0][key] as string;
-        if (_val.startsWith("+")) {
-          return this._originAttr![key] + parseFloat(_val.slice(1));
-        } else if (_val.startsWith("-")) {
-          return this._originAttr![key] - parseFloat(_val.slice(1));
-        }
-      }
-      return 0;
-    }
-
 
     for (const option of options) {
       for (const key in option) {
         if (key in this) {
           const _key = key as keyof ParticleNumAttr;
-          const _endVal = _getEndAttr(_key)
-          _setAttr(_key, _endVal, option.duration);
+          const _attr = option[_key]!;
+          this._setAttr({
+            [_key]: this._getEndAttr(_attr, this._originAttr![_key]),
+            duration: option.duration
+          }, callback);
         }
       }
     }
