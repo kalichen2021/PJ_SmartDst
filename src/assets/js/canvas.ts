@@ -1,4 +1,4 @@
-import type { CanvasItem, SetNumAttrOption, ParticleNumAttr, itemOrArray, AniNumOpt } from "./type.ts";
+import type { CanvasItem, ParticleNumAttr, itemOrArray, AniNumVal, AniOptionsAttr } from "./type.ts";
 import { getRandom, toArray } from "./utils.ts";
 
 class canvasInfo {
@@ -41,13 +41,14 @@ export class canvasOperator extends canvasInfo {
    * @param option 配置选项
    */
   init(option = { dynamicResize: true }) {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio;
+    this.canvas.width = window.innerWidth * dpr;
+    this.canvas.height = window.innerHeight * dpr;
 
     if (option.dynamicResize) {
       const resizeHandler = () => {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        this.canvas.width = window.innerWidth * dpr;
+        this.canvas.height = window.innerHeight * dpr;
       };
       window.removeEventListener("resize", resizeHandler); // 避免重复绑定
       window.addEventListener("resize", resizeHandler);
@@ -162,15 +163,11 @@ export class Particle extends canvasInfo {
     this.dy = dy;
     this.dr = dr;
     this.isAni = isAni;
-    this._originAttr = null;
     this.interval = interval
+    // tips: 防止深拷贝
+    this._originAttr = Object.assign({}, this);
   }
 
-  private _getOriginAttr() {
-    console.log("Particle got origin attr")
-    this._originAttr = this;
-    this._getOriginAttr = () => null;
-  }
   private _setAttr = (
     setAttrOption: {
       [K in keyof ParticleNumAttr]: number
@@ -208,17 +205,18 @@ export class Particle extends canvasInfo {
     _process();
   };
 
-  private _getEndAttr = (editedAttr: AniNumOpt, originAttr: number) => {
+  private _getEndAttr = (editedAttr: AniNumVal, originAttr: number) => {
     if (typeof editedAttr === "number") {
       return editedAttr as number;
     } else if (typeof editedAttr === "string") {
-      const _val = editedAttr as string;
+      const _val = editedAttr;
       if (_val.startsWith("+")) {
         return originAttr + parseFloat(_val.slice(1));
       } else if (_val.startsWith("-")) {
         return originAttr - parseFloat(_val.slice(1));
       }
     }
+    console.log(".")
     return originAttr;
   }
 
@@ -266,29 +264,35 @@ export class Particle extends canvasInfo {
    * @param callback 动画完成后的回调
    */
   animate(
-    options: itemOrArray<SetNumAttrOption<ParticleNumAttr<AniNumOpt>>>,
+    // options: itemOrArray<AniOptionsAttr & ParticleNumAttr<AniNumVal>>,
+    options: itemOrArray<
+      {
+        ParticleAttr: ParticleNumAttr<AniNumVal>
+      } & AniOptionsAttr
+    >,
     callback?: (curObj: Particle) => void
   ) {
-    this._getOriginAttr();
-    console.log("animat is fucking ending")
+    // this._getOriginAttr();
+    // console.log("animat is fucking ending")
     if (this.isAni) {
-      console.log("animating")
       return
     };
-
-    this.isAni = true;
     options = toArray(options);
 
     for (const option of options) {
-      for (const key in option) {
-        if (key in this) {
-          const _key = key as keyof ParticleNumAttr;
-          const _attr = option[_key]!;
-          this._setAttr({
-            [_key]: this._getEndAttr(_attr, this._originAttr![_key]),
-            duration: option.duration
-          }, callback);
-        }
+      const { ParticleAttr, ...aniOptions } = option
+      for (const [key, _attr] of Object.entries(ParticleAttr)) {
+        const _key = key as keyof typeof ParticleAttr
+        const _endAttr = this._getEndAttr(_attr, this._originAttr![_key])
+        if (_endAttr === this[_key]) {
+          continue
+        };
+        this.isAni = true;
+        this._setAttr({
+          [_key]: _endAttr,
+          ...aniOptions
+        }, callback);
+
       }
     }
   }

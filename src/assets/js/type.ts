@@ -10,7 +10,7 @@ export type UserOperaState = "IDLE" | "EDITING" | "EDIT_DRAG" | "EDIT_SCALE";
 
 export type itemOrArray<T> = T | Array<T>
 
-export type AniNumOpt = `+${number}` | `-${number}` | number
+export type AniNumVal = `+${number}` | `-${number}` | number
 
 export interface ParticleNumAttr<T = number> {
   x?: T
@@ -22,7 +22,7 @@ export interface ParticleNumAttr<T = number> {
 }
 
 
-export type SetNumAttrOption<T> = T & {
+export type AniOptionsAttr = {
   duration: number;
   // dT: number;
   re?: boolean

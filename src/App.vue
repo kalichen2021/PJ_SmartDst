@@ -34,7 +34,6 @@ const particles: Array<Particle>[] = []
 let requestId: number | null;
 
 const initializeParticles = (rows: number, cols: number) => {
-  rows = cols = 1 // debug
   const newParticles: Array<Particle[]> = [];
   for (let col = 1; col <= cols; col++) {
     const rowParticles: Particle[] = [];
@@ -42,12 +41,12 @@ const initializeParticles = (rows: number, cols: number) => {
       const p = new Particle({
         interval,
         // debug
-        ...{
-          x: row * 5,
-          y: col * 5
-        },
-        // x: row,
-        // y: col,
+        // ...{
+        //   x: 5,
+        //   y: 5
+        // },
+        x: row,
+        y: col,
         color: "rgba(0, 163, 123, 0.5)",
         radius: 8,
       });
@@ -62,21 +61,26 @@ const animateParticle = (p: Particle, squere: Polygon) => {
   // if (!p.needsUpdate) return;
   let _y = p.y - 0.1
   if (isPointInPolygon([p.x, p.y], squere)) {
-    p.animate({
-      radius: 20,
-      // x:  p.x + interval.x : p.x,
-      // y: "+0",
-      duration: 100
-    });
+    p.animate(
+      {
+        ParticleAttr: {
+          radius: "+12",
+          y: "-0.2",
+        },
+        duration: 100,
+      }
+    );
   } else {
-    p.animate({
-      radius: 8,
-      // x:  p.x + interval.x.x,
-      // y: "-0.1",
-      duration: 1000
-    });
+    p.animate(
+      {
+        ParticleAttr: {
+          radius: "+0",
+          y: "+0",
+        },
+        duration: 500
+      }
+    );
   }
-  // p.needsUpdate = false;
 };
 
 const animateAllParticles = (squere: Polygon) => {
