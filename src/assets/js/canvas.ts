@@ -11,6 +11,18 @@ class canvasInfo {
   lastFrameTime = 0;
   batchUpdateQueue = new Set<() => void>();
 
+  // 抗锯齿相关参数
+  dpr: number = window.devicePixelRatio;
+
+  /**
+   * 获得缩放后实际尺寸
+   * @param _val: 原始尺寸
+   * @returns 缩放后实际尺寸
+   */
+  _dpsize(_val: number) {
+    return _val / this.dpr;
+  }
+
   // 新增批量更新方法
   batchAnimate(callback: () => void) {
     this.batchUpdateQueue.add(callback);
@@ -41,17 +53,18 @@ export class canvasOperator extends canvasInfo {
    * @param option 配置选项
    */
   init(option = { dynamicResize: true }) {
-    const dpr = window.devicePixelRatio;
-    this.canvas.width = window.innerWidth * dpr;
-    this.canvas.height = window.innerHeight * dpr;
+    const _initHandler = () => {
+      this.canvas.width = window.innerWidth * this.dpr;
+      this.canvas.height = window.innerHeight * this.dpr;
+      this.ctx.scale(this.dpr, this.dpr);
+      this.ctx.imageSmoothingEnabled = true
+      // this.ctx.translate(0.5, 0.5);
+    };
+    _initHandler();
 
     if (option.dynamicResize) {
-      const resizeHandler = () => {
-        this.canvas.width = window.innerWidth * dpr;
-        this.canvas.height = window.innerHeight * dpr;
-      };
-      window.removeEventListener("resize", resizeHandler); // 避免重复绑定
-      window.addEventListener("resize", resizeHandler);
+      window.removeEventListener("resize", _initHandler); // 避免重复绑定
+      window.addEventListener("resize", _initHandler);
     }
   }
 
@@ -225,7 +238,10 @@ export class Particle extends canvasInfo {
    */
   draw() {
     this.ctx.beginPath();
-    this.ctx.arc(this.x * this.interval.x, this.y * this.interval.y, this.radius, 0, Math.PI * 2);
+    const _x = this._dpsize(this.x * this.interval.x)
+    const _y = this._dpsize(this.y * this.interval.y)
+    const _r = this._dpsize(this.radius)
+    this.ctx.arc(_x, _y, _r, 0, Math.PI * 2);
     this.ctx.fillStyle = this.color;
     this.ctx.fill();
     this.ctx.closePath();

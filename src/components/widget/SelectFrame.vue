@@ -19,29 +19,7 @@ const elSelectFrame = ref<HTMLElement | null>(null)
 const userOperaStore = useUserOperaStore()
 const AppGroupStore = useAppGroupStore()
 
-// 允许拖动控件工作
-// const enableCtrlerWork = (elGrabBar, GrpCtnControllerList) => {
-//   elGrabBar.value!.draggable = true;
-//   GrpCtnControllerList.forEach((el) => el!.style.display = "block")
 
-//   // 点击空白位置，隐藏控件
-//   clickSwhToHide(
-//     GrpCtnControllerList,
-//     [elCtnMenu.value!.dom!, elIconGrp.value!, ".controller"],
-//     // () => userOperaStore.ctrlState = "IDLE"
-//     () => {
-//       // 复原粒子效果
-//       // console.log(userOperaStore.initializeParticles)
-//       userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]])
-//     }
-//   )
-// }
-
-// let UserOperaHandler = () => {
-//   document.addEventListener("mousedown", e => {
-
-//   })
-// }
 onMounted(() => {
   const interval = { x: 1, y: 1 }
   const slfHder = new SelectFrameHandler(

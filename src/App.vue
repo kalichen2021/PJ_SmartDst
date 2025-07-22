@@ -59,7 +59,6 @@ const initializeParticles = (rows: number, cols: number) => {
 
 const animateParticle = (p: Particle, squere: Polygon) => {
   // if (!p.needsUpdate) return;
-  let _y = p.y - 0.1
   if (isPointInPolygon([p.x, p.y], squere)) {
     p.animate(
       {
