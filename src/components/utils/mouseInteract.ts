@@ -133,6 +133,11 @@ export class MagneticTransitionHandler extends DragHandler {
    * @returns 最近的固定点
    */
   getFixedSize(_x: number, _y: number): { x: number; y: number } {
+    if (this.interval.x === 0 || this.interval.y === 0) {
+      return { x: _x, y: _y }
+    }
+    // _x < 0 ? (_x *= 1.3) : _x
+    // _y < 0 ? (_y *= 1.3) : _y
     return {
       x: Math.round(_x / this.interval.x) * this.interval.x,
       y: Math.round(_y / this.interval.y) * this.interval.y,
@@ -234,6 +239,7 @@ export class ScaleHandler extends MagneticTransitionHandler {
     this.maxSize = option.maxSize ?? [3, 3]
   }
 
+  // 改写getFixedSize
   getFixedSize(_x: number, _y: number): { x: number; y: number } {
     _x = Math.max(_x, 0) // 限制最小宽度为 0
     _y = Math.max(_y, 0) // 限制最小高度为 0
@@ -287,28 +293,56 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     ]
     this.dragable = false
   }
+  // __getFixedSize(_x: number, _y: number): { x: number; y: number; } {
+  //   const fixedX = _x >= 0 ? Math.round(_x / this.interval.x) : Math.floor(_x / this.interval.x);
+  //   const fixedY = _y >= 0 ? Math.round(_y / this.interval.y) : Math.floor(_y / this.interval.y);
+  //   return {
+  //     x: fixedX * this.interval.x,
+  //     y: fixedY * this.interval.y
+  //   }
+  // }
   _start(e: MouseEvent): void {
     if (!this.dragable) return
     this.targetEl.removeAttribute('style')
     super._start(e)
-    this.curStartX = this.startX
-    this.curStartY = this.startY
+    // this.curStartX = this.startX
+    // this.curStartY = this.startY
     this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
+    // 仅设置一次
+    const { x: _startX, y: _startY } = this.getFixedSize(
+      this.startX,
+      this.startY
+    )
+    this.curStartX = _startX
+    this.curStartY = _startY
   }
+
   _processInnerFunc(): void {
-    // const { x: curWidth, y: curHeight } = this.getFixedSize(this.curRelX, this.curRelY)
-    const { x: curWidth, y: curHeight } = { x: Math.abs(this.curRelX), y: Math.abs(this.curRelY) }
-    this.curStartX = this.curRelX < 0 ? this.startX - curWidth : this.startX
-    this.curStartY = this.curRelY < 0 ? this.startY - curHeight : this.startY
-    // 通过改变curStartX来实现万向选择。
-    this.targetEl.style.width = `${curWidth}px`
-    this.targetEl.style.height = `${curHeight}px`
-    this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
+    // 磁吸固定步长效果
+    const { x: curEndX, y: curEndY } = this.getFixedSize(
+      this.startX + this.curRelX,
+      this.startY + this.curRelY
+    )
+    const
+      _curStartX = Math.min(this.curStartX, curEndX),
+      _curStartY = Math.min(this.curStartY, curEndY);
+
+    const { x: curWidth, y: curHeight } = {
+      x: Math.abs(curEndX - this.curStartX),
+      y: Math.abs(curEndY - this.curStartY),
+    }
+    console.log({ curWidth, curHeight })
+
+    const { x: _width, y: _height } = this.getFixedSize(curWidth, curHeight)
+
+    this.targetEl.style.transform = `translate(${_curStartX}px, ${_curStartY}px)`
+    this.targetEl.style.width = `${_width}px`
+    this.targetEl.style.height = `${_height}px`
     this.selectRange = rectToPolygon({
-      x: this.curStartX,
-      y: this.curStartY,
-      width: curWidth,
-      height: curHeight,
+      x: _curStartX,
+      y: _curStartY,
+      width: _width,
+      height: _height,
     })
     super._processInnerFunc()
   }

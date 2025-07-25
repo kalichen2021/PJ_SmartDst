@@ -13,6 +13,7 @@ import type { Polygon } from '@/assets/js/type';
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
 import { useAppGroupStore } from '@/stores/AppGroupStore';
 import { watch } from 'vue';
+import { getIntervalXY } from '../utils/StoreInterval';
 
 const elSelectFrame = ref<HTMLElement | null>(null)
 
@@ -21,12 +22,15 @@ const AppGroupStore = useAppGroupStore()
 
 
 onMounted(() => {
-  const interval = { x: 1, y: 1 }
+  const interval = getIntervalXY()
   const slfHder = new SelectFrameHandler(
     // #region 应用缩放功能
     elSelectFrame.value!,
     {
       interval,
+      _startFnCallback() {
+        elSelectFrame.value!.style.transition = "all 0.1s ease-in-out"
+      },
       _processFnCallback() {
 
       },
@@ -40,6 +44,7 @@ onMounted(() => {
             UserOperaHandler(AppGroupStore.instances)
           }
         })
+        elSelectFrame.value!.style.removeProperty("transition")
         slfHder.dragable = false
       }
     }
