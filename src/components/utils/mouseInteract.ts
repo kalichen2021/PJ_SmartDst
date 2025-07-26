@@ -1,5 +1,5 @@
 import type { Point, Polygon } from '@/assets/js/type'
-import { rectToPolygon, throttle } from '@/assets/js/utils'
+import { focusRepaint, rectToPolygon, throttle } from '@/assets/js/utils'
 import { h, render, type Ref } from 'vue'
 
 export function rightClickHandler(
@@ -67,7 +67,6 @@ export class DragHandler {
     }, 16)()
   }
 
-  // get curRelX() return e.clientX - this.startX
 
   _processInnerFunc() {
     // 使用 requestAnimationFrame 优化 DOM 更新
@@ -100,7 +99,6 @@ export class DragHandler {
     this.startX = 0
     this.startY = 0
 
-    // console.log('Drag stopped')
   }
 }
 
@@ -136,8 +134,6 @@ export class MagneticTransitionHandler extends DragHandler {
     if (this.interval.x === 0 || this.interval.y === 0) {
       return { x: _x, y: _y }
     }
-    // _x < 0 ? (_x *= 1.3) : _x
-    // _y < 0 ? (_y *= 1.3) : _y
     return {
       x: Math.round(_x / this.interval.x) * this.interval.x,
       y: Math.round(_y / this.interval.y) * this.interval.y,
@@ -293,21 +289,13 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     ]
     this.dragable = false
   }
-  // __getFixedSize(_x: number, _y: number): { x: number; y: number; } {
-  //   const fixedX = _x >= 0 ? Math.round(_x / this.interval.x) : Math.floor(_x / this.interval.x);
-  //   const fixedY = _y >= 0 ? Math.round(_y / this.interval.y) : Math.floor(_y / this.interval.y);
-  //   return {
-  //     x: fixedX * this.interval.x,
-  //     y: fixedY * this.interval.y
-  //   }
-  // }
+
   _start(e: MouseEvent): void {
     if (!this.dragable) return
     this.targetEl.removeAttribute('style')
-    super._start(e)
-    // this.curStartX = this.startX
-    // this.curStartY = this.startY
     this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
+    focusRepaint()
+    super._start(e)
     // 仅设置一次
     const { x: _startX, y: _startY } = this.getFixedSize(
       this.startX,

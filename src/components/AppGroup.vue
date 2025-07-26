@@ -84,7 +84,6 @@ const icons = ref([
 
 const userOperaStore = useUserOperaStore()
 const AppGroupStore = useAppGroupStore();
-// const appGroupClass = userOperaStore.appGroupClass
 
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
@@ -97,12 +96,6 @@ const entriesConf = ref<[TP_entryConf]>()
 let GrpCtnControllerList: HTMLElement[] = []
 // tips: InstanceType 实例类型
 const elCtnMenu = ref<InstanceType<typeof CtnMenu> | null>(null)
-
-const getClientVal = (relVal: Point) => {
-  const interval = getIntervalXY()
-  const [x, y] = relVal
-  return [x * interval.x, y * interval.y] as Point
-}
 
 // 允许拖动控件工作
 const enableCtrlerWork = () => {
@@ -122,9 +115,17 @@ const enableCtrlerWork = () => {
   )
 }
 
+// 设置控制器显示样式
 const setCtrlerDisplayStyle = (displayStyle: string) => {
   elGrabBar.value!.style.display = displayStyle
   elScaler.value!.style.display = displayStyle
+}
+
+// 获得实际坐标
+const getClientVal = (relVal: Point) => {
+  const interval = getIntervalXY()
+  const [x, y] = relVal
+  return [x * interval.x, y * interval.y] as Point
 }
 
 const expose = createLinkedState({
@@ -185,9 +186,7 @@ onMounted(() => {
     elIconGrpCtn.value!.querySelectorAll(".controller")
   ) as HTMLElement[];
 
-
-  /**
-   * 编辑文件图标组步骤说明；
+  /** 编辑文件图标组步骤说明；
    * 1. 文件图标组是否被右击 ---y--> 右键菜单
    * 2. 右键菜单中编辑选项是否被点击 ---y--> 文件图标组设置为编辑状态
    * 3. 监听文件图标组是否为编辑状态 ---y--> 显示操作控件
@@ -207,17 +206,17 @@ onMounted(() => {
   }]
   //#endregion
 
-
   // 控件事件
-  const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
   // 读取cookie中的intervalX和intervalY
   const interval = getIntervalXY()
+  // 若未设置intervalX和intervalY，设置为图标大小，刷新页面
   if (Number.isNaN(interval.x)) {
+    const iconSize = elIconWrap.value![0].getBoundingClientRect(); // Use the first element in the array
     setIntervalXY({ x: iconSize.width, y: iconSize.height })
     location.reload()
   }
 
-
+  // 存储位置
   const storePosition = () => {
     expose.appGroupPosition = [
       mvHder.curPosition[0],
@@ -261,7 +260,6 @@ onMounted(() => {
     }
     // #endregion
   );
-
   const sclHder = new ScaleHandler(
     // #region 应用缩放功能
     elGridCtn.value!,

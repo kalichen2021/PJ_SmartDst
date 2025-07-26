@@ -38,11 +38,14 @@ export const getBoundingRectWithMargin = (element: HTMLElement) => {
   };
 }
 
-
 // 获得css根变量
 export const getCssVal = (valName: string) => {
   const root = document.documentElement;
   const cssVar = getComputedStyle(root);
   return cssVar.getPropertyValue(valName).trim();
+}
 
+// 强制更新页面
+export const focusRepaint = () => {
+  document.querySelector("div")!.offsetHeight;
 }
