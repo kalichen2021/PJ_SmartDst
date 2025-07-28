@@ -26,7 +26,6 @@ export const getBoundingRectWithMargin = (element: HTMLElement) => {
   const marginBottom = parseFloat(style.marginBottom) || 0;
   const marginLeft = parseFloat(style.marginLeft) || 0;
   const marginRight = parseFloat(style.marginRight) || 0;
-  console.log({ rect, marginTop, marginBottom, marginLeft, marginRight });
 
   return {
     top: rect.top - marginTop,
@@ -36,13 +35,6 @@ export const getBoundingRectWithMargin = (element: HTMLElement) => {
     width: rect.width + marginLeft + marginRight,
     height: rect.height + marginTop + marginBottom,
   };
-}
-
-// 获得css根变量
-export const getCssVal = (valName: string) => {
-  const root = document.documentElement;
-  const cssVar = getComputedStyle(root);
-  return cssVar.getPropertyValue(valName).trim();
 }
 
 // 强制更新页面

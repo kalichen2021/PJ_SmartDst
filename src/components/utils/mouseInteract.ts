@@ -319,7 +319,6 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
       x: Math.abs(curEndX - this.curStartX),
       y: Math.abs(curEndY - this.curStartY),
     }
-    console.log({ curWidth, curHeight })
 
     const { x: _width, y: _height } = this.getFixedSize(curWidth, curHeight)
 

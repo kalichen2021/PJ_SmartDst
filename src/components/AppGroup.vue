@@ -129,10 +129,8 @@ const getClientVal = (relVal: Point) => {
 }
 
 const expose = createLinkedState({
-  ...markRaw({
-    name: props.name,
-    id: props.name,
-  }),
+  name: props.name,
+  id: props.name,
   appGroupPosition: props.position,
   appGroupSize: props.size,
   GrpCtnCtrlerList: reactive({
@@ -160,16 +158,14 @@ const expose = createLinkedState({
       }
     }
   },
-  appGroupClientPosition: ({ appGroupPosition }): Point => getClientVal(appGroupPosition),
-  appGroupClientSize: ({ appGroupSize }): Point => getClientVal(appGroupSize),
+  appGroupClientPosition: ({ appGroupPosition }: { appGroupPosition: Point }): Point => getClientVal(appGroupPosition),
+  appGroupClientSize: ({ appGroupSize }: { appGroupSize: Point }): Point => getClientVal(appGroupSize),
   appGroupPolygon: ({ appGroupClientPosition, appGroupClientSize }) => {
-    const _position = appGroupClientPosition as Point;
-    const _size = appGroupClientSize as Point;
     return rectToPolygon({
-      x: _position[0],
-      y: _position[1],
-      width: _size[0],
-      height: _size[1]
+      x: appGroupClientPosition[0],
+      y: appGroupClientPosition[1],
+      width: appGroupClientSize[0],
+      height: appGroupClientSize[1]
     })
   },
   enableEdit: () => enableCtrlerWork
