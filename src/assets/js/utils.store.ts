@@ -57,68 +57,73 @@ export const createLinkedState = <T extends Record<string, any>>(
   _config: {
     [K in keyof T]: {
       default: T[K] | ((deps: Omit<T, K>) => T[K]),
-      callback?: (newVal: typeof _config.default) => void
+      callback?: (newVal: T[K]) => void
     } | T[K] | ((deps: Omit<T, K>) => T[K])
-  },
-) => {
-  // !!优化类型断言
-  let NormolizeConfig: Record<string, any> = {}, config: {
-    [K in keyof T]: {
-      default: T[K] | ((deps: Omit<T, K>) => T[K]),
-      callback?: (state: Reactive<{ [K in keyof T]: T[K]; }>) => void
-    }
   }
-  Object.keys(_config)
-    .forEach(k => {
-      const value = typeof _config[k] === 'object'
-        ? _config[k]
-        : {
-          default: _config[k]
-        }
-      NormolizeConfig[k] = value
-    })
-  config = NormolizeConfig as unknown as {
-    [K in keyof T]: {
-      default: T[K] | ((deps: Omit<T, K>) => T[K]),
-      callback?: (state: Reactive<{ [K in keyof T]: T[K]; }>) => void
-    }
-  }
+): T & { update: () => void; debug: () => void } => {
+  // 规范化配置对象类型
+  type ConfigItem<K extends keyof T> = {
+    default: T[K] | ((deps: Omit<T, K>) => T[K]),
+    callback?: (newVal: T[K]) => void
+  };
 
-  const state = reactive<{ [K in keyof T]: T[K] }>({} as any);
-  // 为所有主动变量创建ref
-  Object.keys(config)
-    .filter(k => typeof config[k].default !== 'function')
-    .forEach(k => {
-      Object.defineProperty(state, k, {
-        get: () => config[k].default,
-        set: (val) => {
-          config[k].default = val;
-          // triggerRef(activeRefs[k]);
-          config[k].callback && config[k].callback(val)
+  const normalizedConfig = {} as { [K in keyof T]: ConfigItem<K> };
+
+  // 规范化配置对象
+  Object.keys(_config).forEach(<K extends keyof T>(k: K) => {
+    const value = _config[k];
+    normalizedConfig[k] = (typeof value === 'object' && value !== null && 'default' in value)
+      ? value as ConfigItem<K>
+      : { default: value } as ConfigItem<K>;
+  });
+
+  const state = reactive<T>({} as T);
+
+  // 为所有主动变量创建响应式属性
+  Object.keys(normalizedConfig)
+    .filter(k => typeof normalizedConfig[k].default !== 'function')
+    .forEach(<K extends keyof T>(k: K) => {
+      const key = k as K;
+      Object.defineProperty(state, key, {
+        get: () => normalizedConfig[key].default,
+        set: (val: T[K]) => {
+          normalizedConfig[key].default = val;
+          normalizedConfig[key].callback && normalizedConfig[key].callback(val)
         }
-      })
-    })
-  // 为所有从动变量创建ref
-  Object.keys(config)
-    .filter(k => typeof config[k].default === 'function')
-    .forEach(k => {
-      const driveFunc = config[k].default as (deps: any) => T[typeof k];
-      Object.defineProperty(state, k, {
+      });
+    });
+
+  // 为所有从动变量创建响应式属性
+  Object.keys(normalizedConfig)
+    .filter(k => typeof normalizedConfig[k].default === 'function')
+    .forEach(<K extends keyof T>(key: K) => {
+      const driveFunc = normalizedConfig[key].default as (deps: Reactive<T>) => T[K];
+      Object.defineProperty(state, key, {
         get: () => driveFunc(state),
-        set: (val) => {
-          config[k].callback && config[k].callback(state)
+        set: (val: T[K]) => {
+          normalizedConfig[key].callback && normalizedConfig[key].callback(val);
           throw new Error(`请通过 update 方法修改主动变量`);
         }
-      })
-    })
+      });
+    });
 
+  const update = () => {
+    // 触发所有从动变量更新
+    Object.keys(normalizedConfig)
+      .filter(k => typeof normalizedConfig[k].default === 'function')
+      .forEach(k => {
+        // 这里可能需要根据具体需求实现更新逻辑
+      });
+  };
 
-  const update = () => { }
+  const debug = () => {
+    console.log('State:', state);
+    console.log('Config:', normalizedConfig);
+  };
 
-  const debug = () => { }
-
-  return Object.assign(state, { update, debug });
+  return Object.assign(state, { update, debug }) as T & { update: () => void; debug: () => void };
 }
+
 
 export const createDynamicState = <S>(option: {
   default: keyof S,
