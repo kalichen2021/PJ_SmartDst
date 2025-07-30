@@ -140,7 +140,7 @@ const expose = createLinkedState({
   state: {
     default: "IDLE" as UserOperaState,
     callback: (curState) => {
-      console.log(curState)
+      // console.log(curState)
       switch (curState) {
         case "IDLE":
           userOperaStore.ctrlState = "IDLE";
@@ -151,6 +151,7 @@ const expose = createLinkedState({
           userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]]);// 复原粒子效果
           break;
         case "EDITING":
+          elIconGrp.value!.setAttribute("edit-state", "")
           elIconGrp.value!.classList.add("icon-group-edit")
           // setCtrlerDisplayStyle("block")
           break;
@@ -161,7 +162,7 @@ const expose = createLinkedState({
           elIconGrp.value!.setAttribute("edit-state", "scale")
           break;
         case "EDIT_INTERSECT":
-          elIconGrp.value!.setAttribute("edit-state", "intersect")
+          // elIconGrp.value!.setAttribute("edit-state", "intersect")
           break;
         case "INTERSECTED":
           elIconGrp.value!.setAttribute("edit-state", "intersected")
@@ -247,7 +248,7 @@ onMounted(() => {
     ]
   }
   const _tranStyle = "all .3s"
-  let intersectedAppGroup = new Map()
+  let intersectedAppGroupState = new Map()
   const mvHder = new MoveHandler(
     // #region 应用拖动功能
     elIconGrp.value!,
@@ -266,14 +267,16 @@ onMounted(() => {
         userOperaStore.canvasAnimate(expose.id)
         Array.from(AppGroupStore.instances.values()).filter(itemAppGroup => itemAppGroup.id !== expose.id).forEach(itemAppGroup => {
           if (isPolygonIntersectPolygon(itemAppGroup.appGroupPolygon as Polygon, expose.appGroupPolygon as Polygon)) {
-            console.log(itemAppGroup.name, "与当前图标组相交")
-            intersectedAppGroup.set(itemAppGroup.id, itemAppGroup)
+            // console.log(itemAppGroup.name, "与当前图标组相交")
+            if (!intersectedAppGroupState.has(itemAppGroup.id)) {
+              intersectedAppGroupState.set(itemAppGroup.id, itemAppGroup.state)
+            }
             itemAppGroup.state = "INTERSECTED"
             expose.state = "EDIT_INTERSECT"
             // console.log(itemAppGroup.appGroupPolygon, expose.appGroupPolygon)
-          } else if (intersectedAppGroup.has(itemAppGroup.id)) {
-            intersectedAppGroup.delete(itemAppGroup.id)
-            itemAppGroup.state = "IDLE"
+          } else if (intersectedAppGroupState.has(itemAppGroup.id)) {
+            itemAppGroup.state = intersectedAppGroupState.get(itemAppGroup.id)
+            intersectedAppGroupState.delete(itemAppGroup.id)
           }
         })
       },
@@ -301,6 +304,8 @@ onMounted(() => {
         elGridCtn.value!.style.transition = _tranStyle
         // userOperaStore.ctrlState = "SCALE"
         expose.state = "EDIT_SCALE"
+        userOperaStore.ctrlState = "EDIT_SCALE"
+
       },
       _processFnCallback: () => {
         // 写入store
@@ -367,7 +372,7 @@ onUnmounted(() => {
   // 使用GPU加速
   will-change: transform;
   transform: translate3d(0, 0, 0);
-  transform: scale(1);
+  // transform: ;
   transition: transform 1s cubic-bezier(1, -1.2, 0.11, 1.46);
 }
 
@@ -381,10 +386,12 @@ onUnmounted(() => {
   // width: calc(var(--icon-size)*1/4 + var(--grid-box-size-w));
   // height: calc(var(--icon-size)*1/3 + var(--grid-box-size-h));
   user-select: none;
+
+  background-color: #4444444d;
   // 内阴影,添加内外阴影，防止过渡失效
-  box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.3), 0 0 0px rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, .9), 0 0 0px rgba(0, 0, 0, .3);
   backdrop-filter: blur(3px);
-  transition: all 1s cubic-bezier(1, -1.2, 0.11, 1.46);
+  transition: all .6s cubic-bezier(1, -1.2, 0.11, 1.46);
 
   overflow: hidden;
   // resize: both;
@@ -433,7 +440,7 @@ onUnmounted(() => {
 //#endregion 
 .icon-group[edit-state="intersected"] {
   .border-container {
-    box-shadow: inset 0 0 15px rgba(179, 179, 179, 0.5), 0 0 0px rgba(169, 169, 169, 0.5);
+    box-shadow: inset 1px 5px 20px rgba(0, 0, 0, .9), 0 0 0px rgba(0, 0, 0, .3);
     backdrop-filter: blur(10px);
     // transition: all 1s ease;
     animation: shake-ani .6s ease infinite;
@@ -446,19 +453,19 @@ onUnmounted(() => {
     display: block;
   }
 
-  .border-container {
-    // outline: 50px solid #916f0088;
-    // transition: all 1s ease;
-  }
+  // .border-container {
+  //   // outline: 5px solid #15ff0026;
+  //   // transition: all 1s ease;
+  // }
 }
 
 .icon-group-edit[edit-state="drag"] {
+  z-index: 50;
 
   // 外阴影
-  transform: scale(2);
-
   .border-container {
-    box-shadow: inset 0 0 0px rgba(179, 179, 179, 0.5), 2px 2px 12px rgba(169, 169, 169, 0.5);
+    transform: scale(1.08);
+    box-shadow: inset 0 0 0px rgba(0, 0, 0, 0.5), 2px 2px 12px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     // transition: all 1s ease;
   }
@@ -468,7 +475,7 @@ onUnmounted(() => {
 
   // 外阴影
   .border-container {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
   }
 }
@@ -477,7 +484,7 @@ onUnmounted(() => {
 
   // 外阴影
   .border-container {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
   }
 }

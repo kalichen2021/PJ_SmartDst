@@ -55,7 +55,7 @@
 /* value */
 :root {
   // --root-font-size: 16px;
-  --icon-size: 4.2em;
+  --icon-size: 3.5rem;
   --app-text-size: 0.1rem;
   --ctn-padding: 0.25rem;
   --icon-app-margin: 0.2rem;
@@ -67,11 +67,11 @@
   --interval-y: calc(var(--icon-size) + 0.1em);
 }
 
-$ctn-padding: 0.25rem;
-$app-text-size: 0.1rem;
-$icon-size: 8em;
-$icon-w: $icon-size;
-$icon-h: calc($icon-size + $app-text-size);
+// $ctn-padding: 0.25rem;
+// $app-text-size: 0.1rem;
+// $icon-size: 8em;
+// $icon-w: $icon-size;
+// $icon-h: calc($icon-size + $app-text-size);
 
 *,
 *::before,

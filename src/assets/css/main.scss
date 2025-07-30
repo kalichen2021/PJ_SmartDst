@@ -24,6 +24,10 @@ a,
   }
 }
 
+div[test="test"] {
+  color: rgb(144, 51, 130);
+}
+
 // @media (min-width: 1024px) {
 //   body {
 //     display: flex;
