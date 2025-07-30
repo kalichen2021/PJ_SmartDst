@@ -1,5 +1,5 @@
 <template>
-  <div class="icon-group" ref="elIconGrp">
+  <div class="icon-group" ref="elIconGrp" edit-state>
     <div class="border-container" ref="elIconGrpCtn">
       <div class="container" ref="elGridCtn">
         <div v-for="icon in icons" :key="icon.id" draggable="false" ref="elIconWrap" class="icon-item-wrap">
@@ -144,15 +144,27 @@ const expose = createLinkedState({
       switch (curState) {
         case "IDLE":
           userOperaStore.ctrlState = "IDLE";
-          setCtrlerDisplayStyle("none")
+          // 设置控制器显示样式
+          elIconGrp.value!.setAttribute("edit-state", "")
+          elIconGrp.value!.className = "icon-group"
+          // setCtrlerDisplayStyle("none")
           userOperaStore.initializeParticles([[0, 0], [0, 0], [0, 0], [0, 0]]);// 复原粒子效果
           break;
         case "EDITING":
-          setCtrlerDisplayStyle("block")
+          elIconGrp.value!.classList.add("icon-group-edit")
+          // setCtrlerDisplayStyle("block")
           break;
         case "EDIT_DRAG":
+          elIconGrp.value!.setAttribute("edit-state", "drag")
           break
         case "EDIT_SCALE":
+          elIconGrp.value!.setAttribute("edit-state", "scale")
+          break;
+        case "EDIT_INTERSECT":
+          elIconGrp.value!.setAttribute("edit-state", "intersect")
+          break;
+        case "INTERSECTED":
+          elIconGrp.value!.setAttribute("edit-state", "intersected")
           break;
         default:
           break;
@@ -235,6 +247,7 @@ onMounted(() => {
     ]
   }
   const _tranStyle = "all .3s"
+  let intersectedAppGroup = new Map()
   const mvHder = new MoveHandler(
     // #region 应用拖动功能
     elIconGrp.value!,
@@ -254,7 +267,13 @@ onMounted(() => {
         Array.from(AppGroupStore.instances.values()).filter(itemAppGroup => itemAppGroup.id !== expose.id).forEach(itemAppGroup => {
           if (isPolygonIntersectPolygon(itemAppGroup.appGroupPolygon as Polygon, expose.appGroupPolygon as Polygon)) {
             console.log(itemAppGroup.name, "与当前图标组相交")
-            console.log(itemAppGroup.appGroupPolygon, expose.appGroupPolygon)
+            intersectedAppGroup.set(itemAppGroup.id, itemAppGroup)
+            itemAppGroup.state = "INTERSECTED"
+            expose.state = "EDIT_INTERSECT"
+            // console.log(itemAppGroup.appGroupPolygon, expose.appGroupPolygon)
+          } else if (intersectedAppGroup.has(itemAppGroup.id)) {
+            intersectedAppGroup.delete(itemAppGroup.id)
+            itemAppGroup.state = "IDLE"
           }
         })
       },
@@ -320,6 +339,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 @include rotate-ani(0, -.5rem);
 @include move-ani(0, -.5rem);
+@include shake-ani(.1rem, .1rem, 1, 5);
 
 // tips: 不同单位变量换算用calc()
 // :root {}
@@ -335,7 +355,7 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   // tips: outline 相比 border 不会影响元素的尺寸
-  outline: red 1px solid;
+  // outline: red 1px solid; // debug
   @include display-lt;
   width: fit-content;
   height: fit-content;
@@ -347,18 +367,24 @@ onUnmounted(() => {
   // 使用GPU加速
   will-change: transform;
   transform: translate3d(0, 0, 0);
+  transform: scale(1);
+  transition: transform 1s cubic-bezier(1, -1.2, 0.11, 1.46);
 }
 
 
 .border-container {
   position: relative;
-  outline: 1px solid #ff0000;
+  // outline: 5px solid #916f0088;
   border-radius: 1rem;
   padding: var(--ctn-padding);
   @include display-c;
   // width: calc(var(--icon-size)*1/4 + var(--grid-box-size-w));
   // height: calc(var(--icon-size)*1/3 + var(--grid-box-size-h));
   user-select: none;
+  // 内阴影,添加内外阴影，防止过渡失效
+  box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.3), 0 0 0px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(3px);
+  transition: all 1s cubic-bezier(1, -1.2, 0.11, 1.46);
 
   overflow: hidden;
   // resize: both;
@@ -369,6 +395,7 @@ onUnmounted(() => {
   display: none;
 }
 
+//#region controller style 
 .border-container .controller svg {
   width: 100%;
   height: 100%;
@@ -402,6 +429,60 @@ onUnmounted(() => {
   bottom: 0;
   right: 0;
 }
+
+//#endregion 
+.icon-group[edit-state="intersected"] {
+  .border-container {
+    box-shadow: inset 0 0 15px rgba(179, 179, 179, 0.5), 0 0 0px rgba(169, 169, 169, 0.5);
+    backdrop-filter: blur(10px);
+    // transition: all 1s ease;
+    animation: shake-ani .6s ease infinite;
+  }
+}
+
+
+.icon-group-edit {
+  .controller {
+    display: block;
+  }
+
+  .border-container {
+    // outline: 50px solid #916f0088;
+    // transition: all 1s ease;
+  }
+}
+
+.icon-group-edit[edit-state="drag"] {
+
+  // 外阴影
+  transform: scale(2);
+
+  .border-container {
+    box-shadow: inset 0 0 0px rgba(179, 179, 179, 0.5), 2px 2px 12px rgba(169, 169, 169, 0.5);
+    backdrop-filter: blur(10px);
+    // transition: all 1s ease;
+  }
+}
+
+.icon-group-edit[edit-state="move"] {
+
+  // 外阴影
+  .border-container {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+  }
+}
+
+.icon-group-edit[edit-state="intersect"] {
+
+  // 外阴影
+  .border-container {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+  }
+}
+
+
 
 .container {
   // border: red 1px solid;

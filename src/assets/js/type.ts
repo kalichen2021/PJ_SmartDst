@@ -6,7 +6,7 @@ export interface TP_entryConf {
   clickHandler: (e?: MouseEvent) => void
 }
 
-export type UserOperaState = "IDLE" | "EDITING" | "EDIT_DRAG" | "EDIT_SCALE";
+export type UserOperaState = "IDLE" | "EDITING" | "EDIT_DRAG" | "EDIT_SCALE" | "EDIT_INTERSECT" | "INTERSECTED";
 
 export type itemOrArray<T> = T | Array<T>
 
@@ -67,3 +67,13 @@ export type Rect = {
   height: number
 }
 
+
+// 判断某个键是否是只读的
+export type IfEquals<X, Y, A, B> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? A : B;
+
+export type WritableKeys<T> = {
+  [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P, never>
+}[keyof T];
+
+// 排除只读属性后的类型
+export type ExcludeReadonly<T> = Pick<T, WritableKeys<T>>

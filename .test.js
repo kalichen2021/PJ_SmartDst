@@ -15,7 +15,8 @@ const _config = {
 
 
 const ValueObj = Object.keys(_config).filter(k => _config[k].default)
-const CallbackObj = Array.from()
+// const CallbackObj = Array.from()
 
-console.log(CallbackObj)
+// console.log(CallbackObj)
 
+console.log([][7])

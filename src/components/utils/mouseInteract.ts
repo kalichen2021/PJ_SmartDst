@@ -1,5 +1,5 @@
 import type { Point, Polygon } from '@/assets/js/type'
-import { focusRepaint, rectToPolygon, throttle } from '@/assets/js/utils'
+import { addPatternStyle, focusRepaint, PatternStyle, rectToPolygon, throttle } from '@/assets/js/utils'
 import { h, render, type Ref } from 'vue'
 
 export function rightClickHandler(
@@ -207,7 +207,8 @@ export class MoveHandler extends MagneticTransitionHandler {
     // 使用 transform 替代 left 和 top
     const { x, y } = this.getFixedSize(this.curRelX + this.ElStartX, this.curRelY + this.ElStartY)
     this.curPosition = [x / this.interval.x, y / this.interval.y]
-    this.targetEl.style.transform = `translate(${x}px, ${y}px)`
+    // this.targetEl.style.transform = `translate(${x}px, ${y}px)`
+    PatternStyle(this.targetEl, "Add", 'transform', `translate(${x}px, ${y}px)`)
     super._processInnerFunc()
   }
 }
@@ -293,7 +294,8 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
   _start(e: MouseEvent): void {
     if (!this.dragable) return
     this.targetEl.removeAttribute('style')
-    this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
+    // this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
+    PatternStyle(this.targetEl, "Add", 'transform', `translate(${this.curStartX}px, ${this.curStartY}px)`)
     focusRepaint()
     super._start(e)
     // 仅设置一次
@@ -322,7 +324,8 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
 
     const { x: _width, y: _height } = this.getFixedSize(curWidth, curHeight)
 
-    this.targetEl.style.transform = `translate(${_curStartX}px, ${_curStartY}px)`
+    // this.targetEl.style.transform = `translate(${_curStartX}px, ${_curStartY}px)`
+    PatternStyle(this.targetEl, "Add", 'transform', `translate(${_curStartX}px, ${_curStartY}px)`)
     this.targetEl.style.width = `${_width}px`
     this.targetEl.style.height = `${_height}px`
     this.selectRange = rectToPolygon({

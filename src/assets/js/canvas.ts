@@ -1,5 +1,5 @@
 import type { CanvasItem, ParticleNumAttr, itemOrArray, AniNumVal, AniOptionsAttr } from "./type.ts";
-import { getRandom, toArray } from "./utils.ts";
+import { getRandom, toArray } from "./utils";
 
 class canvasInfo {
   canvas: HTMLCanvasElement;

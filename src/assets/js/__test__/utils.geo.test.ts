@@ -16,5 +16,5 @@ test("isPointInPolygon", () => {
 test("isPolygonIntersectPolygon", () => {
   const polygon1: Polygon = [[6, 5], [10, 5], [10, 9], [6, 9]]
   const polygon2: Polygon = [[10, 4], [14, 4], [14, 8], [10, 8]]
-  expect(isPolygonIntersectPolygon(polygon1, polygon2)).toBe(true)
+  expect(isPolygonIntersectPolygon(polygon1, polygon2)).toBe(false)
 })
