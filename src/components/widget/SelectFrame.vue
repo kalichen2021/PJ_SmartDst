@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { SelectFrameHandler } from '../utils/MouseInteract';
-import { clickSwhToHide, isPolygonInPolygon, UserOperaHandler } from '@/assets/js/utils';
+import { clickSwhToHide, expandPolygon, getCenterPoint, isPolygonInPolygon, UserOperaHandler } from '@/assets/js/utils';
 import type { Polygon } from '@/assets/js/type';
 
 import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
@@ -36,7 +36,7 @@ onMounted(() => {
       },
       _stopFnCallback() {
         AppGroupStore.instances.forEach((item) => {
-          if (isPolygonInPolygon(item.appGroupPolygon as Polygon, slfHder.selectRange)) {
+          if (isPolygonInPolygon(item.appGroupPolygon as Polygon, slfHder.selectRange, 1.1)) {
             item.state = "EDITING"
             console.log(item.name, "在范围内")
             // UserOperaHandler()

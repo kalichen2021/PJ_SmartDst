@@ -1,7 +1,8 @@
 import { expect, test } from 'vitest'
-import { createLinkedState, rectToPolygon } from "../utils";
+import { createLinkedState, isPointInPolygon, rectToPolygon } from "../utils";
 import { nextTick } from 'process';
 import { reactive, ref, triggerRef, type Reactive, type Ref } from 'vue';
+import type { Point, Polygon } from '../type';
 
 
 
@@ -111,3 +112,4 @@ test("cls 类型 debug", async () => {
   expect(cls.area).toBeCloseTo(1 * Math.PI)
   expect(cls.getArea).toBeCloseTo(1 * Math.PI)
 })
+

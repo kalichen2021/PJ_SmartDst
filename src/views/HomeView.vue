@@ -35,7 +35,7 @@ const addAppGroup = (appGroupOption: AppGroupInintialOption) => {
   appGroupOption ??= {
     name: Date.now().toString(),
     appGroupPosition: [0, 0],
-    appGroupSize: [2, 2],
+    appGroupSize: [3, 3],
   }
   appGroupInfoList.value.push(appGroupOption)
 }
@@ -45,7 +45,7 @@ onMounted(async () => {
     {
       name: "default",
       appGroupPosition: [0, 0],
-      appGroupSize: [2, 2],
+      appGroupSize: [3, 3],
     }
   )
 })

@@ -25,7 +25,7 @@ import { useUserOperaStore, appGroupClass } from '@/stores/UserOpera';
 import { useAppGroupStore } from '@/stores/AppGroupStore';
 
 import { MoveHandler, ScaleHandler } from './utils/MouseInteract';
-import type { Point, TP_entryConf, UserOperaState } from '@/assets/js/type';
+import type { Point, Polygon, TP_entryConf, UserOperaState } from '@/assets/js/type';
 
 import IconApp from './icons/IconApp.vue';
 import IconBar from './icons/IconBar.vue';
@@ -33,7 +33,7 @@ import IconMore from './icons/IconMore.vue';
 import IconArrowsRotate from './icons/IconArrowsRotate.vue';
 
 import CtnMenu from '@/components/widget/CtnMenu.vue'
-import { clickSwhToHide, createLinkedState, getBoundingRectWithMargin, getCookie, rectToPolygon } from '@/assets/js/utils';
+import { clickSwhToHide, createLinkedState, getBoundingRectWithMargin, getCookie, isPolygonIntersectPolygon, rectToPolygon, UserOperaHandler } from '@/assets/js/utils';
 import { getIntervalXY, setIntervalXY } from './utils/StoreInterval';
 import { onUnmounted } from 'vue';
 import type { PropType } from 'vue';
@@ -103,6 +103,7 @@ const enableCtrlerWork = () => {
   GrpCtnControllerList.forEach((el) => el!.style.display = "block")
 
   // 点击空白位置，隐藏控件
+  // UserOperaHandler(AppGroupStore.instances)
   clickSwhToHide(
     GrpCtnControllerList,
     [elCtnMenu.value!.dom!, elIconGrp.value!, ".controller"],
@@ -158,9 +159,17 @@ const expose = createLinkedState({
       }
     }
   },
+  appGroupPolygon: ({ appGroupPosition, appGroupSize }) => {
+    return rectToPolygon({
+      x: appGroupPosition[0],
+      y: appGroupPosition[1],
+      width: appGroupSize[0] + 1,
+      height: appGroupSize[1] + 1
+    })
+  },
   appGroupClientPosition: ({ appGroupPosition }: { appGroupPosition: Point }): Point => getClientVal(appGroupPosition),
   appGroupClientSize: ({ appGroupSize }: { appGroupSize: Point }): Point => getClientVal(appGroupSize),
-  appGroupPolygon: ({ appGroupClientPosition, appGroupClientSize }) => {
+  appGroupClientPolygon: ({ appGroupClientPosition, appGroupClientSize }) => {
     return rectToPolygon({
       x: appGroupClientPosition[0],
       y: appGroupClientPosition[1],
@@ -242,6 +251,12 @@ onMounted(() => {
         storePosition()
         // 绘制canvas网格
         userOperaStore.canvasAnimate(expose.id)
+        Array.from(AppGroupStore.instances.values()).filter(itemAppGroup => itemAppGroup.id !== expose.id).forEach(itemAppGroup => {
+          if (isPolygonIntersectPolygon(itemAppGroup.appGroupPolygon as Polygon, expose.appGroupPolygon as Polygon)) {
+            console.log(itemAppGroup.name, "与当前图标组相交")
+            console.log(itemAppGroup.appGroupPolygon, expose.appGroupPolygon)
+          }
+        })
       },
       _stopFnCallback: () => {
         // 写入store

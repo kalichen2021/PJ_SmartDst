@@ -33,16 +33,22 @@ export const appGroupClass = createLinkedState({
   name: "default",
   appGroupPosition: [0, 0] as Point,
   appGroupSize: [3, 3] as Point,
-  appGroupClientPosition: ({ appGroupPosition }): Point => getClientVal(appGroupPosition),
-  appGroupClientSize: ({ appGroupSize }): Point => getClientVal(appGroupSize),
-  appGroupPolygon: ({ appGroupClientPosition, appGroupClientSize }) => {
-    const _position = appGroupClientPosition as Point;
-    const _size = appGroupClientSize as Point;
+  appGroupPolygon: ({ appGroupPosition, appGroupSize }) => {
     return rectToPolygon({
-      x: _position[0],
-      y: _position[1],
-      width: _size[0],
-      height: _size[1]
+      x: appGroupPosition[0],
+      y: appGroupPosition[1],
+      width: appGroupSize[0] + 1,
+      height: appGroupSize[1] + 1
+    })
+  },
+  appGroupClientPosition: ({ appGroupPosition }: { appGroupPosition: Point }): Point => getClientVal(appGroupPosition),
+  appGroupClientSize: ({ appGroupSize }: { appGroupSize: Point }): Point => getClientVal(appGroupSize),
+  appGroupClientPolygon: ({ appGroupClientPosition, appGroupClientSize }): Polygon => {
+    return rectToPolygon({
+      x: appGroupClientPosition[0],
+      y: appGroupClientPosition[1],
+      width: appGroupClientSize[0],
+      height: appGroupClientSize[1]
     })
   }
 })

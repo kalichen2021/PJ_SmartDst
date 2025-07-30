@@ -326,10 +326,10 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     this.targetEl.style.width = `${_width}px`
     this.targetEl.style.height = `${_height}px`
     this.selectRange = rectToPolygon({
-      x: _curStartX,
-      y: _curStartY,
-      width: _width,
-      height: _height,
+      x: _curStartX / this.interval.x,
+      y: _curStartY / this.interval.y,
+      width: _width / this.interval.x,
+      height: _height / this.interval.y,
     })
     super._processInnerFunc()
   }
