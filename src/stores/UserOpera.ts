@@ -6,6 +6,7 @@ import { getIntervalXY } from "@/components/utils/StoreInterval";
 
 
 
+// Global State Manager
 export const useUserOperaStore = defineStore('userOpera', () => {
   const ctrlState: Ref<UserOperaState> = ref("IDLE")
   // const appGroupPosition: Ref<Point> = ref([0, 0])

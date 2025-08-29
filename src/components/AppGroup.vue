@@ -141,7 +141,7 @@ const expose = createLinkedState({
   state: {
     default: "IDLE" as UserOperaState,
     callback: (curState) => {
-      // console.log(curState)
+      console.log(curState)
       switch (curState) {
         case "IDLE":
           userOperaStore.ctrlState = "IDLE";
@@ -167,7 +167,7 @@ const expose = createLinkedState({
           break;
         case "INTERSECTED":
           elIconGrp.value!.setAttribute("edit-state", "intersected")
-          console.log("intersected")
+          // console.log("intersected")
           break;
         default:
           break;
@@ -250,7 +250,7 @@ onMounted(() => {
     ]
   }
   const _tranStyle = "all .3s"
-  let intersectedAppGroupState = new Map()
+  let prevStates = new Map()
   const mvHder = new MoveHandler(
     // #region 应用拖动功能
     elIconGrp.value!,
@@ -267,20 +267,22 @@ onMounted(() => {
         storePosition()
         // 绘制canvas网格
         userOperaStore.canvasAnimate(expose.id)
-        Array.from(AppGroupStore.instances.values()).filter(itemAppGroup => itemAppGroup.id !== expose.id).forEach(itemAppGroup => {
-          if (isPolygonIntersectPolygon(itemAppGroup.appGroupPolygon as Polygon, expose.appGroupPolygon as Polygon)) {
-            // console.log(itemAppGroup.name, "与当前图标组相交")
-            if (!intersectedAppGroupState.has(itemAppGroup.id)) {
-              intersectedAppGroupState.set(itemAppGroup.id, itemAppGroup.state)
+        // 检查是否与其他图标组相交
+        Array.from(AppGroupStore.instances.values())
+          .filter(itemAppGroup => itemAppGroup.id !== expose.id) // 过滤掉当前图标组
+          .forEach(itemAppGroup => {
+            if (isPolygonIntersectPolygon(itemAppGroup.appGroupPolygon as Polygon, expose.appGroupPolygon as Polygon)) {
+              // console.log(itemAppGroup.name, "与当前图标组相交")
+              if (!prevStates.has(itemAppGroup.id)) {
+                prevStates.set(itemAppGroup.id, itemAppGroup.state)
+                itemAppGroup.state = "INTERSECTED"
+                expose.state = "EDIT_INTERSECT"
+              }
+            } else if (prevStates.has(itemAppGroup.id)) {
+              itemAppGroup.state = prevStates.get(itemAppGroup.id)
+              prevStates.delete(itemAppGroup.id)
             }
-            itemAppGroup.state = "INTERSECTED"
-            expose.state = "EDIT_INTERSECT"
-            // console.log(itemAppGroup.appGroupPolygon, expose.appGroupPolygon)
-          } else if (intersectedAppGroupState.has(itemAppGroup.id)) {
-            itemAppGroup.state = intersectedAppGroupState.get(itemAppGroup.id)
-            intersectedAppGroupState.delete(itemAppGroup.id)
-          }
-        })
+          })
       },
       _stopFnCallback: () => {
         // 写入store
