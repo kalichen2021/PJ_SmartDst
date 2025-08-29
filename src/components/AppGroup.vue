@@ -1,4 +1,4 @@
-<template>
+<template ref="elIconGrp_">
   <div class="icon-group" ref="elIconGrp" edit-state>
     <div class="border-container" ref="elIconGrpCtn">
       <div class="container" ref="elGridCtn">
@@ -85,6 +85,7 @@ const icons = ref([
 const userOperaStore = useUserOperaStore()
 const AppGroupStore = useAppGroupStore();
 
+const elIconGrp_ = ref<HTMLElement | null>(null)
 const elIconGrp = ref<HTMLElement | null>(null)
 const elIconGrpCtn = ref<HTMLElement | null>(null)
 const elGridCtn = ref<HTMLElement | null>(null)
@@ -166,6 +167,7 @@ const expose = createLinkedState({
           break;
         case "INTERSECTED":
           elIconGrp.value!.setAttribute("edit-state", "intersected")
+          console.log("intersected")
           break;
         default:
           break;
@@ -288,7 +290,7 @@ onMounted(() => {
         elIconGrp.value!.style.removeProperty('transition')
         userOperaStore.ctrlState = "EDITING"
         expose.state = "EDITING"
-        console.log("stop")
+        //console.log("stop")
       }
     }
     // #endregion

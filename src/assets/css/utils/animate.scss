@@ -62,13 +62,13 @@
 @mixin shake-ani($offset-x: 0.1rem, $offset-y: 0.1rem, $intensity: 1, $steps: 10) {
   $x: $offset-x * $intensity;
   $y: $offset-y * $intensity;
-  $half-steps: $steps / 2;
+  $half-steps: $steps * 0.5;
 
   @keyframes shake-ani {
 
     @for $i from 0 through $steps {
-      $progress: $i / $steps;
-      $multi: math.round($steps/4 + 1)*2;
+      $progress: math.div($i, $steps);
+      $multi: math.round(calc($steps/4 + 1))*2;
 
       #{$progress * 100%} {
         $current-x: $x * math.sin($progress * math.$pi * $multi);

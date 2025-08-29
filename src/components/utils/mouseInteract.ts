@@ -125,10 +125,10 @@ export class MagneticTransitionHandler extends DragHandler {
     this._stopFnCallback = _stopFnCallback ?? (() => { })
   }
   /**
-   * 获得最近的固定点
+   * 获得最近的固定点, 返回相对坐标。
    * @param _x - x坐标
    * @param _y - y坐标
-   * @returns 最近的固定点
+   * @returns 返回最近的固定点, 相对坐标
    */
   getFixedSize(_x: number, _y: number): { x: number; y: number } {
     if (this.interval.x === 0 || this.interval.y === 0) {
@@ -138,6 +138,11 @@ export class MagneticTransitionHandler extends DragHandler {
       x: Math.round(_x / this.interval.x) * this.interval.x,
       y: Math.round(_y / this.interval.y) * this.interval.y,
     }
+  }
+
+  // 使用绝对坐标
+  moveTo(x: number, y: number) {
+    PatternStyle(this.targetEl, "Add", 'transform', `translate(${x}px, ${y}px)`)
   }
 
   _start(e: MouseEvent): void {
@@ -161,6 +166,8 @@ export class MoveHandler extends MagneticTransitionHandler {
   curPosition: Point
   ElStartX: number = 0
   ElStartY: number = 0
+  // 自动移动的选项, 绝对距离
+  autoMoveOption: { x: number; y: number }
   constructor(
     el: HTMLElement,
     options: {
@@ -172,6 +179,7 @@ export class MoveHandler extends MagneticTransitionHandler {
   ) {
     super(el, options)
     this.curPosition = [0, 0]
+    this.autoMoveOption = { x: 0, y: 0 }
   }
 
   /**
@@ -189,8 +197,9 @@ export class MoveHandler extends MagneticTransitionHandler {
     return { x0, y0 }
   }
 
+
   _start(e: MouseEvent): void {
-    // tips: 小心监听器。还有整个函数的过程，它可能会让你刚改完的值右窜改成其他值。
+    // tips: 小心监听器。还有整个函数的过程，它可能会让你刚改完的值又窜改成其他值。
     // 所以要先把值存起来，然后再用。
     this.ElStartX = this.targetElAxis.x0
     this.ElStartY = this.targetElAxis.y0
@@ -208,7 +217,7 @@ export class MoveHandler extends MagneticTransitionHandler {
     const { x, y } = this.getFixedSize(this.curRelX + this.ElStartX, this.curRelY + this.ElStartY)
     this.curPosition = [x / this.interval.x, y / this.interval.y]
     // this.targetEl.style.transform = `translate(${x}px, ${y}px)`
-    PatternStyle(this.targetEl, "Add", 'transform', `translate(${x}px, ${y}px)`)
+    this.moveTo(x, y)
     super._processInnerFunc()
   }
 }
@@ -295,7 +304,7 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     if (!this.dragable) return
     this.targetEl.removeAttribute('style')
     // this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
-    PatternStyle(this.targetEl, "Add", 'transform', `translate(${this.curStartX}px, ${this.curStartY}px)`)
+    this.moveTo(this.curStartX, this.curStartY)
     focusRepaint()
     super._start(e)
     // 仅设置一次
@@ -325,7 +334,7 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     const { x: _width, y: _height } = this.getFixedSize(curWidth, curHeight)
 
     // this.targetEl.style.transform = `translate(${_curStartX}px, ${_curStartY}px)`
-    PatternStyle(this.targetEl, "Add", 'transform', `translate(${_curStartX}px, ${_curStartY}px)`)
+    this.moveTo(_curStartX, _curStartY)
     this.targetEl.style.width = `${_width}px`
     this.targetEl.style.height = `${_height}px`
     this.selectRange = rectToPolygon({
