@@ -130,6 +130,9 @@ const getClientVal = (relVal: Point) => {
   return [x * interval.x, y * interval.y] as Point
 }
 
+const autoMove = ref((...args: number[]) => { })
+const moveHandler = ref<MoveHandler>()
+
 const expose = createLinkedState({
   name: props.name,
   id: props.name,
@@ -141,7 +144,7 @@ const expose = createLinkedState({
   state: {
     default: "IDLE" as UserOperaState,
     callback: (curState) => {
-      console.log(curState)
+      // console.log(curState)
       switch (curState) {
         case "IDLE":
           userOperaStore.ctrlState = "IDLE";
@@ -192,7 +195,15 @@ const expose = createLinkedState({
       height: appGroupClientSize[1]
     })
   },
-  enableEdit: () => enableCtrlerWork
+  enableEdit: () => enableCtrlerWork,
+  ConfigAutoMove: {
+    default: [0, 0],
+    callback: (val) => {
+      console.log(val)
+      autoMove.value(...val)
+    }
+  },
+  moveHandler: moveHandler
 })
 
 defineExpose(expose)
@@ -236,7 +247,7 @@ onMounted(() => {
     location.reload()
   }
 
-  // 存储位置
+  //#region 存储位置
   const storePosition = () => {
     expose.appGroupPosition = [
       mvHder.curPosition[0],
@@ -249,8 +260,15 @@ onMounted(() => {
       sclHder.curSize[1]
     ]
   }
+  //#endregion
+
   const _tranStyle = "all .3s"
-  let prevStates = new Map()
+  const prevStates = new Map()
+  // 绑定自动移动函数
+  autoMove.value = (x: number, y: number) => {
+    console.log("move")
+    mvHder.moveTo(x, y)
+  }
   const mvHder = new MoveHandler(
     // #region 应用拖动功能
     elIconGrp.value!,
@@ -277,10 +295,20 @@ onMounted(() => {
                 prevStates.set(itemAppGroup.id, itemAppGroup.state)
                 itemAppGroup.state = "INTERSECTED"
                 expose.state = "EDIT_INTERSECT"
+                // itemAppGroup.ConfigAutoMove = [
+                //   expose.appGroupPosition[0] + itemAppGroup.appGroupSize[0],
+                //   expose.appGroupPosition[1] + itemAppGroup.appGroupSize[1]
+                // ]
+                itemAppGroup.moveHandler?.moveTo(
+                  expose.appGroupPosition[0] + itemAppGroup.appGroupSize[0],
+                  expose.appGroupPosition[1] + itemAppGroup.appGroupSize[1]
+                )
+                itemAppGroup.moveHandler!.isUnder = true
               }
             } else if (prevStates.has(itemAppGroup.id)) {
               itemAppGroup.state = prevStates.get(itemAppGroup.id)
               prevStates.delete(itemAppGroup.id)
+              itemAppGroup.moveHandler!.isUnder = false
             }
           })
       },
@@ -297,6 +325,8 @@ onMounted(() => {
     }
     // #endregion
   );
+  moveHandler.value = mvHder
+
   const sclHder = new ScaleHandler(
     // #region 应用缩放功能
     elGridCtn.value!,

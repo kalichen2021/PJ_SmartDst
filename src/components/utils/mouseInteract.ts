@@ -168,6 +168,7 @@ export class MoveHandler extends MagneticTransitionHandler {
   ElStartY: number = 0
   // 自动移动的选项, 绝对距离
   autoMoveOption: { x: number; y: number }
+  isUnder: boolean = false
   constructor(
     el: HTMLElement,
     options: {
@@ -197,6 +198,12 @@ export class MoveHandler extends MagneticTransitionHandler {
     return { x0, y0 }
   }
 
+  // 重写moveTo,改写成相对坐标 !!!
+  moveTo(x: number, y: number): void {
+    super.moveTo(x * this.interval.x, y * this.interval.y)
+    console.log("move to ", x, y)
+    this.curPosition = [x, y]
+  }
 
   _start(e: MouseEvent): void {
     // tips: 小心监听器。还有整个函数的过程，它可能会让你刚改完的值又窜改成其他值。
@@ -215,9 +222,8 @@ export class MoveHandler extends MagneticTransitionHandler {
     // this.targetEl.style.top = `${this.curRelY}px`
     // 使用 transform 替代 left 和 top
     const { x, y } = this.getFixedSize(this.curRelX + this.ElStartX, this.curRelY + this.ElStartY)
-    this.curPosition = [x / this.interval.x, y / this.interval.y]
     // this.targetEl.style.transform = `translate(${x}px, ${y}px)`
-    this.moveTo(x, y)
+    this.moveTo(x / this.interval.x, y / this.interval.y)
     super._processInnerFunc()
   }
 }

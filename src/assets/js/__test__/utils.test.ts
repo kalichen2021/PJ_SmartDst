@@ -113,3 +113,21 @@ test("cls 类型 debug", async () => {
   expect(cls.getArea).toBeCloseTo(1 * Math.PI)
 })
 
+test("LinkedState", () => {
+  const state = createLinkedState({
+    a: {
+      default: 1,
+    },
+    b: {
+      default: 2,
+    },
+    c: {
+      default: ({ a, b }): number => a + b,
+    },
+    d: {
+      default: ({ c }): number => c * 2,
+    }
+  })
+
+  expect(state.d).toBe(6)
+})
