@@ -140,9 +140,36 @@ export class MagneticTransitionHandler extends DragHandler {
     }
   }
 
-  // 使用绝对坐标
+  /**
+   * 获得相对坐标
+   * @param x 绝对坐标x
+   * @param y 绝对坐标y
+   * @returns 相对坐标
+   */
+  getRelVal(x: number, y: number) {
+    return {
+      x: x / this.interval.x,
+      y: y / this.interval.y,
+    }
+  }
+
+  /**
+   * 获得绝对坐标
+   * @param x 相对坐标x
+   * @param y 相对坐标y
+   * @returns 绝对坐标
+   */
+  getAbsVal(x: number, y: number) {
+    return {
+      x: x * this.interval.x,
+      y: y * this.interval.y,
+    }
+  }
+
+  // 使用相对坐标
   moveTo(x: number, y: number) {
-    PatternStyle(this.targetEl, "Add", 'transform', `translate(${x}px, ${y}px)`)
+    const { x: x0, y: y0 } = this.getAbsVal(x, y)
+    PatternStyle(this.targetEl, "Add", 'transform', `translate(${x0}px, ${y0}px)`)
   }
 
   _start(e: MouseEvent): void {
@@ -198,9 +225,9 @@ export class MoveHandler extends MagneticTransitionHandler {
     return { x0, y0 }
   }
 
-  // 重写moveTo,改写成相对坐标 !!!
+  // 重写moveTo
   moveTo(x: number, y: number): void {
-    super.moveTo(x * this.interval.x, y * this.interval.y)
+    super.moveTo(x, y)
     console.log("move to ", x, y)
     this.curPosition = [x, y]
   }
@@ -222,8 +249,9 @@ export class MoveHandler extends MagneticTransitionHandler {
     // this.targetEl.style.top = `${this.curRelY}px`
     // 使用 transform 替代 left 和 top
     const { x, y } = this.getFixedSize(this.curRelX + this.ElStartX, this.curRelY + this.ElStartY)
-    // this.targetEl.style.transform = `translate(${x}px, ${y}px)`
-    this.moveTo(x / this.interval.x, y / this.interval.y)
+    const { x: relX, y: relY } = this.getRelVal(x, y)
+    // this.targetEl.style.transform = `translate(${relX}px, ${relY}px)`
+    this.moveTo(relX, relY)
     super._processInnerFunc()
   }
 }
@@ -310,7 +338,8 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     if (!this.dragable) return
     this.targetEl.removeAttribute('style')
     // this.targetEl.style.transform = `translate(${this.curStartX}px, ${this.curStartY}px)`
-    this.moveTo(this.curStartX, this.curStartY)
+    const { x: relX, y: relY } = this.getRelVal(this.curStartX, this.curStartY)
+    this.moveTo(relX, relY)
     focusRepaint()
     super._start(e)
     // 仅设置一次
@@ -340,14 +369,18 @@ export class SelectFrameHandler extends MagneticTransitionHandler {
     const { x: _width, y: _height } = this.getFixedSize(curWidth, curHeight)
 
     // this.targetEl.style.transform = `translate(${_curStartX}px, ${_curStartY}px)`
-    this.moveTo(_curStartX, _curStartY)
+    const { x: curStartRelX, y: curStartRelY } = this.getRelVal(_curStartX, _curStartY)
+    const { x: relWidth, y: relHeight } = this.getRelVal(_width, _height)
+
+    this.moveTo(curStartRelX, curStartRelY)
     this.targetEl.style.width = `${_width}px`
     this.targetEl.style.height = `${_height}px`
+
     this.selectRange = rectToPolygon({
-      x: _curStartX / this.interval.x,
-      y: _curStartY / this.interval.y,
-      width: _width / this.interval.x,
-      height: _height / this.interval.y,
+      x: curStartRelX,
+      y: curStartRelY,
+      width: relWidth,
+      height: relHeight,
     })
     super._processInnerFunc()
   }
